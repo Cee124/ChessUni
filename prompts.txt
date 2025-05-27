@@ -1,2 +1,120 @@
-1. Prompt: 
---> 
+1. Prompt: wie erstellt man einen timer in java swing?
+--> Timer mit javax.swing.Timer (gut für GUIs)
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class SwingTimerBeispiel {
+    public static void main(String[] args) {
+        int delay = 1000; // Millisekunden
+        Timer timer = new Timer(delay, new ActionListener() {
+            int sekunden =   0;
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                sekunden++;
+                System.out.println("Sekunden: " + sekunden);
+                if (sekunden == 5) {
+                    ((Timer)e.getSource()).stop();
+                    System.out.println("Fertig!");
+                }
+            }
+        });
+        timer.start();
+
+        // Verhindert sofortiges Beenden in Konsolenanwendungen:
+        JOptionPane.showMessageDialog(null, "Timer läuft – klicke OK zum Beenden.");
+    }
+}
+Möchtest du z. B. einen Countdown, Stoppuhr, oder einen GUI-Timer mit Start/Stop/Reset? Sag einfach Bescheid, und ich zeig dir genau das passende Beispiel.
+
+2. Prompt: wie kann man in java swing ein objekt verschönern wie in css
+--> In Java Swing kannst du ein Objekt (z. B. ein JButton, JPanel, JLabel usw.) gestalten oder „verschönern“, aber Swing bietet keine direkte Unterstützung für CSS wie in HTML. Stattdessen verwendest du Methoden und Klassen aus dem javax.swing und java.awt Paket, um Stil, Layout und Aussehen zu beeinflussen.
+
+Hier sind einige Techniken, um Swing-Komponenten optisch aufzuwerten – quasi das Pendant zu CSS in Swing:
+1. Farben ändern (wie background-color, color in CSS)
+
+JButton button = new JButton("Klick mich");
+button.setBackground(Color.BLUE);         // Hintergrundfarbe
+button.setForeground(Color.WHITE);        // Schriftfarbe
+
+2. Schriftart und Größe (wie font-family, font-size)
+
+button.setFont(new Font("Arial", Font.BOLD, 16));
+
+3. Rahmen und Padding (wie border, padding)
+
+button.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2)); // Rahmen
+
+// Padding mit leerem Rand innen
+button.setBorder(BorderFactory.createCompoundBorder(
+    BorderFactory.createLineBorder(Color.BLACK, 2),
+    BorderFactory.createEmptyBorder(10, 20, 10, 20)
+));
+
+4. Transparenz und runde Ecken (wie border-radius, opacity)
+
+Für runde Ecken musst du die Komponente oft selbst zeichnen:
+
+JButton roundedButton = new JButton("Rund") {
+    @Override
+    protected void paintComponent(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setColor(getBackground());
+        g2.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
+        super.paintComponent(g);
+        g2.dispose();
+    }
+};
+roundedButton.setContentAreaFilled(false);
+roundedButton.setOpaque(false);
+roundedButton.setBackground(Color.CYAN);
+
+Wenn du willst, kann ich dir ein konkretes Beispiel für eine „hübsche“ Swing-Komponente schreiben. Möchtest du z. B. einen schön gestylten Button
+
+3. Prompt: wie erstellt man in java swing ein viereck?
+--> Um in Java Swing ein Viereck (Rechteck oder Quadrat) zu erstellen, kannst du eine benutzerdefinierte Komponente erstellen, indem du eine Klasse erstellst, die von JPanel erbt, und in dieser Klasse die paintComponent(Graphics g)-Methode überschreibst. Dort kannst du dann mit der Graphics-API das Viereck zeichnen.
+
+Hier ist ein einfaches Beispiel:
+
+import javax.swing.*;
+import java.awt.*;
+
+public class ViereckZeichnen extends JPanel {
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        // Farbe setzen (optional)
+        g.setColor(Color.BLUE);
+
+        // Viereck zeichnen: (x, y, breite, höhe)
+        g.drawRect(50, 50, 100, 100);  // Quadrat
+        // g.drawRect(50, 50, 150, 100);  // Rechteck
+
+        // Optional: gefülltes Viereck
+        // g.fillRect(200, 50, 100, 100);
+    }
+
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Viereck in Swing");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(400, 300);
+        frame.add(new ViereckZeichnen());
+        frame.setVisible(true);
+    }
+}
+
+Erklärung:
+
+    g.drawRect(x, y, breite, höhe): Zeichnet den Rand eines Vierecks.
+
+    g.fillRect(...): Zeichnet ein ausgefülltes Viereck.
+
+    setColor(...): Setzt die Farbe für den nächsten Zeichenbefehl.
+
+Du kannst das Viereck anpassen, indem du die Position und Größe in drawRect() veränderst.
+
+Möchtest du das Viereck z. B. interaktiv machen (verschiebbar, klickbar etc.)?
