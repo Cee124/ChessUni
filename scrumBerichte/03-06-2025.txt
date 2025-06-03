@@ -1,26 +1,29 @@
 Luis:
-
 - Was habe ich letzte Woche gemacht?
--->
+--> Prototyp für Schachbrett GUI
+
 - Was plane ich diese Woche zu tun?
--->
+--> Logik der Figuren (König, Bischof, Turm)
+
 - Auf welche (größeren) Probleme bin ich gestoßen?
--->
+--> Wie man coded, dass die Zeit runterzählt in der GUI (ActionListener + actionPerformed())
 
 Chris:
-
 - Was habe ich letzte Woche gemacht?
 -->
+
 - Was plane ich diese Woche zu tun?
 -->
+
 - Auf welche (größeren) Probleme bin ich gestoßen?
 -->
 
 Ruwen:
-
 - Was habe ich letzte Woche gemacht?
 -->
+
 - Was plane ich diese Woche zu tun?
 -->
+
 - Auf welche (größeren) Probleme bin ich gestoßen?
 -->
