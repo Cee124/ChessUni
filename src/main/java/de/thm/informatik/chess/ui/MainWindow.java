@@ -2,8 +2,10 @@ package de.thm.informatik.chess.ui;
 
 import javax.swing.JFrame;
 
-public class TestMain {
+public class MainWindow {
     public static void main(String[] args) {
+
+        //Initialisieren und Deklarieren eines neuen Board Fensters
         Board board = new Board();
 
         JFrame jf = new JFrame("Chess Board (8 x 8)");
