@@ -20,10 +20,10 @@ Chris:
 
 Ruwen:
 - Was habe ich letzte Woche gemacht?
--->
+--> Übersicht über die Aufgabe verschafft und groben Aufbau durchdacht
 
 - Was plane ich diese Woche zu tun?
--->
+--> Einbindung der PGN Dateien ermöglichen + Logging der Spielstände/Spielverläufe
 
 - Auf welche (größeren) Probleme bin ich gestoßen?
--->
+--> bisher keine
