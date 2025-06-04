@@ -10,7 +10,7 @@ Luis:
 
 Chris:
 - Was habe ich letzte Woche gemacht?
---> Planung und Analyste der Anforderungen
+--> Planung und Analyse der Anforderungen
 
 - Was plane ich diese Woche zu tun?
 --> Schachbrett dynamisch gestalten. Zusätzlich plane ich, die Bibliothek chesslib in das Projekt zu integrieren.
