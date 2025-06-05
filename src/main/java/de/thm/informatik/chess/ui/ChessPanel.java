@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.JPanel;
@@ -18,6 +19,7 @@ import com.github.bhlangonijr.chesslib.Square;
 import com.github.bhlangonijr.chesslib.move.Move;
 
 import de.thm.informatik.chess.domain.ChessEngine;
+import de.thm.informatik.chess.util.PieceImageLoader;
 
 public class ChessPanel extends JPanel {
 
@@ -27,7 +29,6 @@ public class ChessPanel extends JPanel {
     private ChessEngine engine = new ChessEngine();
     private Square selectedSquare = null;
     private final int squareSize = 95;
-
     public ChessPanel() {
         addMouseListener(new MouseAdapter() {
             @Override
@@ -57,6 +58,8 @@ public class ChessPanel extends JPanel {
             }
         });
     }
+
+    
 
     @Override
     protected void paintComponent(Graphics g) {

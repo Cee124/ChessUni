@@ -1,4 +1,4 @@
-package de.thm.informatik.chess.ui;
+package de.thm.informatik.chess.util;
 
 import java.awt.Image;
 import java.io.IOException;
