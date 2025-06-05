@@ -12,12 +12,24 @@
         <maven.compiler.target>23</maven.compiler.target>
     </properties>
 
+    <repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>  
+    </repositories>
+    
     <dependencies>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>5.9.2</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.bhlangonijr</groupId>
+            <artifactId>chesslib</artifactId>
+            <version>1.3.4</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
