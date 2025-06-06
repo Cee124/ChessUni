@@ -33,7 +33,7 @@ public class ChessPanel extends JPanel {
     private ChessEngine engine = new ChessEngine();
     private Square selectedSquare = null;
     private final int squareSize = 95;
-    private static final LinkedList<Move> leckEi = new LinkedList<>();
+    private static final LinkedList<Move> moveHistory = new LinkedList<>();
 
     public ChessPanel() {
         setLayout(null);
@@ -77,7 +77,7 @@ public class ChessPanel extends JPanel {
 
                     if (legalMoves.contains(move)) {
                         engine.makeMove(move);
-                        leckEi.add(move);
+                        moveHistory.add(move);
                         repaint();
                         System.out.println("Move executed: " + move);
                     } else {
@@ -90,8 +90,8 @@ public class ChessPanel extends JPanel {
         });
     }
 
-    public static LinkedList<Move> getAllLegalMoves() {
-        return leckEi;
+    public static LinkedList<Move> getMoveHistory() {
+        return moveHistory;
     }
 
     @Override
@@ -143,7 +143,7 @@ public class ChessPanel extends JPanel {
         g.setFont(new Font("Monospaced", Font.PLAIN, 14));
         g.setColor(Color.BLACK);
 
-        List<Move> moves = getAllLegalMoves();
+        List<Move> moves = getMoveHistory();
 
         int operationRectX = 1200;
         int operationRectY = 200;
