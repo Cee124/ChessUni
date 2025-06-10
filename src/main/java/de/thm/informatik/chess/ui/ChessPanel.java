@@ -19,10 +19,11 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 
 import com.github.bhlangonijr.chesslib.Piece;
+import static com.github.bhlangonijr.chesslib.Side.WHITE;
 import com.github.bhlangonijr.chesslib.Square;
 import com.github.bhlangonijr.chesslib.move.Move;
+
 import de.thm.informatik.chess.domain.ChessEngine;
-import static com.github.bhlangonijr.chesslib.Side.*;
 
 public class ChessPanel extends JPanel {
 
@@ -39,6 +40,10 @@ public class ChessPanel extends JPanel {
 
     private final JButton forwardButton;
     private final JButton rewindButton;
+    private final JButton startButton;
+    private final JButton pauseButton;
+
+    private int currentMoveIndex;
 
     public ChessPanel() {
         setLayout(null);
@@ -51,15 +56,29 @@ public class ChessPanel extends JPanel {
         Image scaledRewindImage = rewind.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
         ImageIcon scaledRewind = new ImageIcon(scaledRewindImage);
 
+        ImageIcon start = new ImageIcon(getClass().getResource("/Icons/play.png"));
+        Image scaledStartImage = start.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+        ImageIcon scaledStartButton = new ImageIcon(scaledStartImage);
+
+        ImageIcon pause = new ImageIcon(getClass().getResource("/Icons/pause.png"));
+        Image scaledPauseImage = pause.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
+        ImageIcon scaledPause = new ImageIcon(scaledPauseImage);
+
         forwardButton = new JButton(scaledForward);
         rewindButton = new JButton(scaledRewind);
+        startButton = new JButton(scaledStartButton);
+        pauseButton = new JButton(scaledPause);
         
         add(forwardButton);
         add(rewindButton);
+        add(startButton);
+        add(pauseButton);
 
         //Buttons für forward und rewind TBC
-        forwardButton.addActionListener(e -> System.out.println("fast forward"));
-        rewindButton.addActionListener(e -> System.out.println("rewinded"));
+        forwardButton.addActionListener(e -> fastForwardMove());
+        rewindButton.addActionListener(e -> rewindMove());
+        startButton.addActionListener(e -> startWhiteClock());
+        pauseButton.addActionListener(e -> pauseClocks());
 
         addMouseListener(new MouseAdapter() {
             @Override
@@ -79,7 +98,9 @@ public class ChessPanel extends JPanel {
 
                     if (legalMoves.contains(move)) {
                         engine.makeMove(move);
+                        moveHistory.subList(currentMoveIndex, moveHistory.size()).clear();
                         moveHistory.add(move);
+                        currentMoveIndex = moveHistory.size();
                         repaint();
                         System.out.println("Move executed: " + move);
 
@@ -102,6 +123,29 @@ public class ChessPanel extends JPanel {
         return moveHistory;
     }
 
+    private void rewindMove(){
+        if(currentMoveIndex > 0){
+            currentMoveIndex--;
+            engine.reset();
+            for(int i = 0; i < currentMoveIndex; i++){
+                engine.makeMove(moveHistory.get(i));
+            }
+            repaint();  
+        }
+    }
+
+    private void fastForwardMove(){
+        List<Move> moveHistoryForward = getMoveHistory();
+
+        if(currentMoveIndex < moveHistoryForward.size()){
+            currentMoveIndex++;
+            Move currentMove = moveHistoryForward.get(currentMoveIndex);
+            engine.makeMove(currentMove);
+            repaint();
+        }
+
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -118,9 +162,17 @@ public class ChessPanel extends JPanel {
         int statsY = 200;
 
         int buttonY = statsY + 5;
+
         int rewindButtonX = statsX + 10;
         int forwardButtonX = statsX + 260;
-        
+        int operationRectWidth = 300;
+        int buttonsTotalWidth = 30 + 20 + 30;
+        int centerInStats = statsX + (operationRectWidth - buttonsTotalWidth) / 2;
+
+        pauseButton.setBounds(centerInStats, buttonY, 30, 30);
+        startButton.setBounds(centerInStats + 30 + 20, buttonY, 30, 30);
+
+
         rewindButton.setBounds(rewindButtonX, buttonY, 30, 30);
         forwardButton.setBounds(forwardButtonX, buttonY, 30, 30);
 
@@ -204,6 +256,19 @@ public class ChessPanel extends JPanel {
         g2.dispose();
     }
 
+    private void pauseClocks() {
+        if (whiteRunning && whiteTimer != null) {
+            whiteTimer.stop();
+            whiteRunning = false;
+        }
+        if (blackRunning && blackTimer != null) {
+            blackTimer.stop();
+            blackRunning = false;
+        }
+        repaint();
+    }
+
+
     private Square squareFromCoords(int rank, int file) {
         char fileChar = (char) ('A' + file);
         char rankChar = (char) ('1' + rank);
@@ -249,8 +314,6 @@ public class ChessPanel extends JPanel {
                 repaint();
             }
         });
-
-        startWhiteClock();
     }
 
     public void startWhiteClock(){
