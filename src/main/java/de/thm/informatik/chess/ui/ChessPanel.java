@@ -6,7 +6,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.TextArea;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -22,18 +21,24 @@ import javax.swing.Timer;
 import com.github.bhlangonijr.chesslib.Piece;
 import com.github.bhlangonijr.chesslib.Square;
 import com.github.bhlangonijr.chesslib.move.Move;
-
 import de.thm.informatik.chess.domain.ChessEngine;
+import static com.github.bhlangonijr.chesslib.Side.*;
 
 public class ChessPanel extends JPanel {
 
-    private Timer countDownTimer;
-    private long remaining;
-    private boolean running;
+    private Timer whiteTimer;
+    private Timer blackTimer;
+    private boolean whiteRunning = false;
+    private boolean blackRunning = false;
+    private long whiteRemaining;
+    private long blackRemaining;
     private ChessEngine engine = new ChessEngine();
     private Square selectedSquare = null;
     private final int squareSize = 95;
     private static final LinkedList<Move> moveHistory = new LinkedList<>();
+
+    private final JButton forwardButton;
+    private final JButton rewindButton;
 
     public ChessPanel() {
         setLayout(null);
@@ -46,12 +51,9 @@ public class ChessPanel extends JPanel {
         Image scaledRewindImage = rewind.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
         ImageIcon scaledRewind = new ImageIcon(scaledRewindImage);
 
-        JButton forwardButton = new JButton(scaledForward);
-        JButton rewindButton = new JButton(scaledRewind);
-
-        forwardButton.setBounds(1420, 205, 30, 30);
-        rewindButton.setBounds(1250, 205, 30, 30);
-
+        forwardButton = new JButton(scaledForward);
+        rewindButton = new JButton(scaledRewind);
+        
         add(forwardButton);
         add(rewindButton);
 
@@ -80,6 +82,12 @@ public class ChessPanel extends JPanel {
                         moveHistory.add(move);
                         repaint();
                         System.out.println("Move executed: " + move);
+
+                        if(engine.getBoard().getSideToMove() == WHITE){
+                            startWhiteClock();
+                        }else{
+                            startBlackClock();
+                        }
                     } else {
                         System.out.println("Illegal move: " + move);
                     }
@@ -98,7 +106,25 @@ public class ChessPanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        //Brett zeichnen
+        int boardRightEdge = 8 * squareSize;
+        int boardBottomEdge = 8 * squareSize;
+    
+        
+        int clockX = boardRightEdge + 50;
+        int whiteClockY = boardBottomEdge - 50;
+        int blackClockY = 50;                   
+    
+        int statsX = getWidth() - 300 - 100;
+        int statsY = 200;
+
+        int buttonY = statsY + 5;
+        int rewindButtonX = statsX + 10;
+        int forwardButtonX = statsX + 260;
+        
+        rewindButton.setBounds(rewindButtonX, buttonY, 30, 30);
+        forwardButton.setBounds(forwardButtonX, buttonY, 30, 30);
+
+        //Draw chess board
         for (int rank = 0; rank < 8; rank++) {
             for (int file = 0; file < 8; file++) {
                 if ((rank + file) % 2 == 0) {
@@ -110,7 +136,7 @@ public class ChessPanel extends JPanel {
             }
         }
 
-        //Figuren zeichnen
+        //Draw pieces
         for (int rank = 0; rank < 8; rank++) {
             for (int file = 0; file < 8; file++) {
                 Square sq = squareFromCoords(rank, file);
@@ -126,51 +152,56 @@ public class ChessPanel extends JPanel {
             }
         }
 
-        //Timeranzeige
-        if (running) {
-            g.setColor(Color.RED);
-            g.setFont(new Font("TIMES NEW ROMAN", Font.BOLD, 40));
+        //Draw clocks
+        g.setFont(new Font("TIMES NEW ROMAN", Font.BOLD, 40));
 
-            long sumSeconds = remaining / 1000;
-            long sumMinutes = sumSeconds / 60;
-            long seconds = sumSeconds % 60;
+        //White clock
+        g.setColor(whiteRunning ? Color.RED : Color.BLACK);
+        long whiteSumSeconds = whiteRemaining / 1000;
+        long whiteSumMinutes = whiteSumSeconds / 60;
+        long whiteSeconds = whiteSumSeconds % 60;
+        String whiteTime = String.format("%02d:%02d", whiteSumMinutes, whiteSeconds);
+        g.drawString(whiteTime, clockX, whiteClockY);
 
-            String time = String.format("%02d:%02d", sumMinutes, seconds);
-            g.drawString(time, 1300, 235);
-        }
-
-        //Stats Anzeige
+        //Black clock
+        g.setColor(blackRunning ? Color.RED : Color.BLACK);
+        long blackSumSeconds = blackRemaining / 1000;
+        long blackSumMinutes = blackSumSeconds / 60;
+        long blackSeconds = blackSumSeconds % 60;
+        String blackTime = String.format("%02d:%02d", blackSumMinutes, blackSeconds);
+        g.drawString(blackTime, clockX, blackClockY);
+    
+        //Draw stats display
         g.setFont(new Font("Monospaced", Font.PLAIN, 14));
         g.setColor(Color.BLACK);
 
         List<Move> moves = getMoveHistory();
 
-        int operationRectX = 1200;
-        int operationRectY = 200;
+        int operationRectX = statsX;
+        int operationRectY = statsY;
         int operactionRectWidth = 300;
         int operationRectHeight = 40;
 
-        int statsRectX = 1200; 
-        int statsRectY = 240;  
+        int statsRectX = statsX; 
+        int statsRectY = statsY + 40;  
         int statsRectWidth = 300;
-        int statsRectHeight = Math.max(40, moves.size() * 20 + 20); // Dynamisch je nach Zuganzahl
+        int statsRectHeight = Math.max(40, moves.size() * 20 + 20);
 
-        //Um Linien dicker zu machen
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setColor(Color.BLACK);
-        g2.setStroke(new BasicStroke(3)); //3 Pixel dicke Linie
+        g2.setStroke(new BasicStroke(3));
         g2.drawRect(operationRectX, operationRectY, operactionRectWidth, operationRectHeight);
         g2.drawRect(statsRectX, statsRectY, statsRectWidth, statsRectHeight);
 
-        int yLine = 260;
+        int yLine = statsY + 60;
         for (int i = 0; i < moves.size(); i++) {
             String color = (i % 2 == 0) ? "Weiß" : "Schwarz";
             String line = String.format("%s: %s", color, moves.get(i).toString());
-            g2.drawString(line, 1300, 255 + i * 20);
-            g2.drawLine(1200, yLine, 1500, yLine);
+            g2.drawString(line, statsX + 100, statsY + 55 + i * 20);
+            g2.drawLine(statsX, yLine, statsX + 300, yLine);
             yLine += 20;
         }
-        g2.dispose(); //Ressourcen freigeben
+        g2.dispose();
     }
 
     private Square squareFromCoords(int rank, int file) {
@@ -181,39 +212,71 @@ public class ChessPanel extends JPanel {
     }
 
     public void addClock(int timeType) {
-        if (countDownTimer != null && countDownTimer.isRunning()) {
-            countDownTimer.stop();
+        if(whiteTimer != null){
+            whiteTimer.stop();
+        }
+        if(blackTimer != null){
+            blackTimer.stop();
         }
 
-        switch (timeType) {
-            case 3:
-                remaining = 3 * 60 * 1000;
-                break;
-            case 5:
-                remaining = 5 * 60 * 1000;
-                break;
-            case 10:
-                remaining = 10 * 60 * 1000;
-                break;
-            default:
-                System.out.println("Invalid");
-                return;
-        }
-        running = true;
+        long remaining = timeType * 60 * 1000;
 
-        countDownTimer = new Timer(1000, new ActionListener() {
+        whiteRemaining = remaining;
+        blackRemaining = remaining;
+
+        whiteTimer = new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                remaining -= 1000;
-                if (remaining <= 0) {
-                    remaining = 0;
-                    running = false;
-                    countDownTimer.stop();
+                whiteRemaining -= 1000;
+                if (whiteRemaining <= 0) {
+                    whiteRemaining = 0;
+                    whiteRunning = false;
+                    whiteTimer.stop();
                 }
                 repaint();
             }
         });
 
-        countDownTimer.start();
+        blackTimer = new Timer(1000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                blackRemaining -= 1000;
+                if (blackRemaining <= 0) {
+                    blackRemaining = 0;
+                    blackRunning = false;
+                    blackTimer.stop();
+                }
+                repaint();
+            }
+        });
+
+        startWhiteClock();
     }
+
+    public void startWhiteClock(){
+        blackRunning = false;
+
+        if(blackTimer != null){
+            blackTimer.stop();
+        }
+
+        whiteRunning = true;
+        if(whiteTimer != null){
+            whiteTimer.start();
+        }
+    }
+
+    private void startBlackClock(){
+        whiteRunning = false;
+
+        if(whiteTimer != null){
+            whiteTimer.stop();
+        }
+
+        blackRunning = true;
+        if(blackTimer != null){
+            blackTimer.start();
+        }
+    }
+
 }
