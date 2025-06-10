@@ -3,6 +3,7 @@ package de.thm.informatik.chess.ui;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -12,6 +13,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -43,36 +45,29 @@ public class ChessPanel extends JPanel {
     private final JButton startButton;
     private final JButton pauseButton;
 
+    private final JButton whiteKing;
+    private final JButton blackKing;
+
     private int currentMoveIndex;
 
     public ChessPanel() {
         setLayout(null);
-        //Icons von FlatIcon
-        ImageIcon fastForward = new ImageIcon(getClass().getResource("/Icons/fast-forward.png"));
-        Image scaledForwardImage = fastForward.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-        ImageIcon scaledForward = new ImageIcon(scaledForwardImage);
 
-        ImageIcon rewind = new ImageIcon(getClass().getResource("/Icons/rewind-button.png"));
-        Image scaledRewindImage = rewind.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-        ImageIcon scaledRewind = new ImageIcon(scaledRewindImage);
+        forwardButton = new JButton(IconLoader.FORWARD_ICON);
+        rewindButton = new JButton(IconLoader.REWIND_ICON);
+        startButton = new JButton(IconLoader.START_ICON);
+        pauseButton = new JButton(IconLoader.PAUSE_ICON);
 
-        ImageIcon start = new ImageIcon(getClass().getResource("/Icons/play.png"));
-        Image scaledStartImage = start.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-        ImageIcon scaledStartButton = new ImageIcon(scaledStartImage);
-
-        ImageIcon pause = new ImageIcon(getClass().getResource("/Icons/pause.png"));
-        Image scaledPauseImage = pause.getImage().getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-        ImageIcon scaledPause = new ImageIcon(scaledPauseImage);
-
-        forwardButton = new JButton(scaledForward);
-        rewindButton = new JButton(scaledRewind);
-        startButton = new JButton(scaledStartButton);
-        pauseButton = new JButton(scaledPause);
+        whiteKing = new JButton(IconLoader.WHITEKING_ICON);
+        blackKing = new JButton(IconLoader.BLACKKING_ICON);
         
         add(forwardButton);
         add(rewindButton);
         add(startButton);
         add(pauseButton);
+
+        add(whiteKing);
+        add(blackKing);
 
         //Buttons für forward und rewind TBC
         forwardButton.addActionListener(e -> fastForwardMove());
@@ -150,6 +145,15 @@ public class ChessPanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
+        //Rechte Bildschirmhälfte dunkelgrün färben
+        Graphics2D g2 = (Graphics2D) g.create();
+        Color mattDunkelgruen = new Color(30, 60, 30);
+        int panelWidth = getWidth();
+        int panelHeight = getHeight();
+        g2.setColor(mattDunkelgruen);
+        g2.fillRect(panelWidth / 2, 0, panelWidth / 2, panelHeight);
+        g2.dispose();
+
         int boardRightEdge = 8 * squareSize;
         int boardBottomEdge = 8 * squareSize;
     
@@ -171,10 +175,11 @@ public class ChessPanel extends JPanel {
 
         pauseButton.setBounds(centerInStats, buttonY, 30, 30);
         startButton.setBounds(centerInStats + 30 + 20, buttonY, 30, 30);
-
-
         rewindButton.setBounds(rewindButtonX, buttonY, 30, 30);
         forwardButton.setBounds(forwardButtonX, buttonY, 30, 30);
+
+        whiteKing.setBounds(centerInStats +60 + 40, buttonY, 30, 30);
+        blackKing.setBounds(centerInStats - 30 - 20, buttonY, 30, 30);
 
         //Draw chess board
         for (int rank = 0; rank < 8; rank++) {
@@ -239,7 +244,7 @@ public class ChessPanel extends JPanel {
         int statsRectWidth = 300;
         int statsRectHeight = Math.max(40, moves.size() * 20 + 20);
 
-        Graphics2D g2 = (Graphics2D) g.create();
+        g2 = (Graphics2D) g.create();
         g2.setColor(Color.BLACK);
         g2.setStroke(new BasicStroke(3));
         g2.drawRect(operationRectX, operationRectY, operactionRectWidth, operationRectHeight);
@@ -247,13 +252,28 @@ public class ChessPanel extends JPanel {
 
         int yLine = statsY + 60;
         for (int i = 0; i < moves.size(); i++) {
-            String color = (i % 2 == 0) ? "Weiß" : "Schwarz";
-            String line = String.format("%s: %s", color, moves.get(i).toString());
-            g2.drawString(line, statsX + 100, statsY + 55 + i * 20);
+            Predicate<Integer> isWhite = p -> p % 2 == 0;
+            String color = isWhite.test(i) ? "Weiß" : "Schwarz";
+            String moveText = moves.get(i).toString();
+
+            int textY = statsY + 55 + i * 20;
+
+            g2.setFont(new Font("Monospaced", Font.BOLD, 14));
+            g2.setColor(isWhite.test(i) ? Color.WHITE : Color.BLACK);
+
+            String label = color + ":";
+            FontMetrics fm = g2.getFontMetrics();
+            int labelWidth = fm.stringWidth(label);
+
+            g2.drawString(label, statsX + 100, textY);
+            g2.drawString(moveText, statsX + 100 + labelWidth + 10, textY);
+
+            //Trennlinie
+            g2.setColor(Color.BLACK);
             g2.drawLine(statsX, yLine, statsX + 300, yLine);
             yLine += 20;
         }
-        g2.dispose();
+
     }
 
     private void pauseClocks() {
