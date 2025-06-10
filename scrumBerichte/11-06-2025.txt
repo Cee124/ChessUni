@@ -1,11 +1,11 @@
 Luis:
 
 - Was habe ich letzte Woche gemacht?
--->
+--> Button Logik rewind, forward, start, pause und Stats Anzeige implementiert
 - Was plane ich diese Woche zu tun?
--->
+--> Eröffnungserkennung implementieren, gui verbessern, prompt datei ergänzen
 - Auf welche (größeren) Probleme bin ich gestoßen?
--->
+--> Fehlendes Wissen über Befehle und Methoden zur Formatierung von Objekten mit Swing z.B. FontMetrics
 
 Chris:
 
