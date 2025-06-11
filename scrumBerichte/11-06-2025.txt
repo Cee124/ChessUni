@@ -10,11 +10,12 @@ Luis:
 Chris:
 
 - Was habe ich letzte Woche gemacht?
--->
+--> Chesslib integriert (Figuren, Spiellogik) und Einbau in die Klasse ChessPanel 
 - Was plane ich diese Woche zu tun?
--->
+--> Anzeigen wohin eine gewählte Spielfigur ziehen kann + Startbildschirm mit Auswahl zwischen 3 Modi's 
 - Auf welche (größeren) Probleme bin ich gestoßen?
--->
+--> Wie integriere ich externe Bibliotheken und wie ich die Chesslib richtig in unserem Programm verwenden kann. Was macht die Chesslib, was für Methoden beinhaltet sie etc. 
+Zudem fiel mir die Integration im Chesspanel mit JavaSwing, MouseListener etc schwer, da ich dazu nicht das nötige Wissen hatte. 
 
 Ruwen:
 
