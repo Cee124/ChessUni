@@ -1,9 +1,11 @@
 package de.thm.informatik.chess.ui;
 
+import java.io.IOException;
+
 import javax.swing.JFrame;
 
 public class MainWindow {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         JFrame frame = new JFrame("Chess");
         ChessPanel panel = new ChessPanel();
         panel.addClock(5);

@@ -11,6 +11,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -26,6 +30,8 @@ import com.github.bhlangonijr.chesslib.Square;
 import com.github.bhlangonijr.chesslib.move.Move;
 
 import de.thm.informatik.chess.domain.ChessEngine;
+import de.thm.informatik.chess.domain.Opening;
+import de.thm.informatik.chess.domain.OpeningDetection;
 
 public class ChessPanel extends JPanel {
 
@@ -50,7 +56,26 @@ public class ChessPanel extends JPanel {
 
     private int currentMoveIndex;
 
-    public ChessPanel() {
+    private final OpeningDetection detector;
+    private Opening detectedOpening = null;
+
+    private List<Opening> openings;
+
+    public ChessPanel() throws IOException {
+        detector = new OpeningDetection();
+
+        try (InputStream in = getClass().getClassLoader().getResourceAsStream("Openings/eco_openings.html")) {
+            if (in == null) {
+                System.out.println("Opening-Datei nicht gefunden!");
+                openings = new ArrayList<>();
+            } else {
+                openings = detector.loadOpenings(in);
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            openings = new ArrayList<>();
+        }
+
         setLayout(null);
 
         forwardButton = new JButton(IconLoader.FORWARD_ICON);
@@ -96,7 +121,18 @@ public class ChessPanel extends JPanel {
                         moveHistory.subList(currentMoveIndex, moveHistory.size()).clear();
                         moveHistory.add(move);
                         currentMoveIndex = moveHistory.size();
+
+                        System.out.println("=== Aktuelle MoveHistory ===");
+                        for (Move m : moveHistory) {
+                            System.out.println(m.toString());
+                        }
+
+                        detectedOpening = detector.detectOpening(getMoveHistory(), openings);
+                        if (detectedOpening != null) {
+                            System.out.println("Erkannte Eröffnung: " + detectedOpening);
+                        }
                         repaint();
+
                         System.out.println("Move executed: " + move);
 
                         if(engine.getBoard().getSideToMove() == WHITE){
@@ -152,7 +188,6 @@ public class ChessPanel extends JPanel {
         int panelHeight = getHeight();
         g2.setColor(mattDunkelgruen);
         g2.fillRect(panelWidth / 2, 0, panelWidth / 2, panelHeight);
-        g2.dispose();
 
         int boardRightEdge = 8 * squareSize;
         int boardBottomEdge = 8 * squareSize;
@@ -164,6 +199,24 @@ public class ChessPanel extends JPanel {
     
         int statsX = getWidth() - 300 - 100;
         int statsY = 200;
+
+        //Opening Detection Window
+        int openingRectX = statsX;
+        int openingRectY = statsY - 100;
+        int openingRectWidth = 300;
+        int openingRectHeight = 40;
+
+        g2.setColor(Color.BLACK);
+        g2.setStroke(new BasicStroke(3));
+        g2.drawRect(openingRectX, openingRectY, openingRectWidth, openingRectHeight);
+
+        String openingText = (detectedOpening != null) ? detectedOpening.toString() : "Keine Eröffnung erkannt";
+        
+        g2.setFont(new Font("SansSerif", Font.BOLD, 14));
+        FontMetrics fm = g2.getFontMetrics();
+        int textWidth = fm.stringWidth(openingText);
+
+        g2.drawString(openingText, openingRectX + (openingRectWidth - textWidth) / 2, openingRectY + 25);
 
         int buttonY = statsY + 5;
 
@@ -244,7 +297,6 @@ public class ChessPanel extends JPanel {
         int statsRectWidth = 300;
         int statsRectHeight = Math.max(40, moves.size() * 20 + 20);
 
-        g2 = (Graphics2D) g.create();
         g2.setColor(Color.BLACK);
         g2.setStroke(new BasicStroke(3));
         g2.drawRect(operationRectX, operationRectY, operactionRectWidth, operationRectHeight);
@@ -262,8 +314,8 @@ public class ChessPanel extends JPanel {
             g2.setColor(isWhite.test(i) ? Color.WHITE : Color.BLACK);
 
             String label = color + ":";
-            FontMetrics fm = g2.getFontMetrics();
-            int labelWidth = fm.stringWidth(label);
+            FontMetrics fm1 = g2.getFontMetrics();
+            int labelWidth = fm1.stringWidth(label);
 
             g2.drawString(label, statsX + 100, textY);
             g2.drawString(moveText, statsX + 100 + labelWidth + 10, textY);
@@ -273,6 +325,7 @@ public class ChessPanel extends JPanel {
             g2.drawLine(statsX, yLine, statsX + 300, yLine);
             yLine += 20;
         }
+        g2.dispose();
 
     }
 
