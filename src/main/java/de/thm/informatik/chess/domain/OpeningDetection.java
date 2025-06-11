@@ -28,7 +28,6 @@ public class OpeningDetection {
         for (Element bold : boldElements) {
             String headerText = bold.text().trim();
 
-            // Nur Einträge mit ECO-Code (z. B. B66)
             if (!headerText.matches("^[A-E]\\d{2} .*")) continue;
 
             String[] parts = headerText.split(" ", 2);
@@ -37,7 +36,6 @@ public class OpeningDetection {
             String eco = parts[0].trim();
             String name = parts[1].trim();
 
-            // Zugfolge aus nächstem Textknoten suchen
             Node next = bold.nextSibling();
             while (next != null && (next.nodeName().equals("br") || next.toString().trim().isEmpty())) {
                 next = next.nextSibling();
@@ -75,14 +73,12 @@ public class OpeningDetection {
         List<String> uciMoves = new ArrayList<>();
 
         try {
-            // PGN in temporäre Datei schreiben, da PgnHolder nur mit Datei arbeitet
             File tempPgn = File.createTempFile("opening", ".pgn");
             tempPgn.deleteOnExit();
 
             String pgn = "[Event \"Opening\"]\n\n" + moveText + " *";
             java.nio.file.Files.write(tempPgn.toPath(), pgn.getBytes());
 
-            // Mit chesslib laden
             PgnHolder holder = new PgnHolder(tempPgn.getAbsolutePath());
             holder.loadPgn();
 

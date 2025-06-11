@@ -121,7 +121,8 @@ public class ChessPanel extends JPanel {
                         moveHistory.subList(currentMoveIndex, moveHistory.size()).clear();
                         moveHistory.add(move);
                         currentMoveIndex = moveHistory.size();
-
+                        
+                        //Debug Ausgabe
                         System.out.println("=== Aktuelle MoveHistory ===");
                         for (Move m : moveHistory) {
                             System.out.println(m.toString());
