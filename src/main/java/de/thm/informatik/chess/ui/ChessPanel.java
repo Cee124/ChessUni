@@ -33,6 +33,7 @@ import com.github.bhlangonijr.chesslib.move.Move;
 import de.thm.informatik.chess.domain.ChessEngine;
 import de.thm.informatik.chess.domain.Opening;
 import de.thm.informatik.chess.domain.OpeningDetection;
+import de.thm.informatik.chess.domain.UciParser;
 
 public class ChessPanel extends JPanel {
 
@@ -58,14 +59,12 @@ public class ChessPanel extends JPanel {
     private int currentMoveIndex;
 
     private final OpeningDetection detector;
-    private Opening detectedOpening = null;
-
-    private List<Opening> openings;
-
+    private final Map<String, String> openingMap;
+    
     public ChessPanel() throws IOException {
         detector = new OpeningDetection();
 
-        Map<String, String> openingMap = detector.loadOpenings("/Openings/eco_openings.html");
+        openingMap = detector.loadOpenings("/Openings/eco_openings.html");
         if(openingMap.isEmpty()){
             System.out.println("LEEEEEEEEEEEEEEEEEER");
         }else{
@@ -117,16 +116,14 @@ public class ChessPanel extends JPanel {
                         moveHistory.subList(currentMoveIndex, moveHistory.size()).clear();
                         moveHistory.add(move);
                         currentMoveIndex = moveHistory.size();
-                        
-                        //Debug Ausgabe
-                        System.out.println("=== Aktuelle MoveHistory ===");
-                        for (Move m : moveHistory) {
-                            System.out.println(m.toString());
-                        }
+
+                        List<Move> currentMoves = getMoveHistory();
+                        String currentUciMoves = convertMoveListToUci(currentMoves);
+                        System.out.println(currentUciMoves);
+                        String sanAnnotated = UciParser.convertUciToAnnotatedMoves(currentUciMoves);
+                        System.out.println("Annotierte Züge: " + sanAnnotated);
 
                         repaint();
-
-                        System.out.println("Move executed: " + move);
 
                         if(engine.getBoard().getSideToMove() == WHITE){
                             startWhiteClock();
@@ -167,7 +164,6 @@ public class ChessPanel extends JPanel {
             engine.makeMove(currentMove);
             repaint();
         }
-
     }
 
     @Override
@@ -203,12 +199,26 @@ public class ChessPanel extends JPanel {
         g2.setStroke(new BasicStroke(3));
         g2.drawRect(openingRectX, openingRectY, openingRectWidth, openingRectHeight);
 
-        String openingText = (detectedOpening != null) ? detectedOpening.toString() : "Keine Eröffnung erkannt";
+        List<Move> currentMoves = getMoveHistory();
+        String currentUciMoves = convertMoveListToUci(currentMoves);
+        String sanAnnotated = UciParser.convertUciToAnnotatedMoves(currentUciMoves);
+        String openingText = "Keine Eröffnung erkannt";
+
+        for(Map.Entry<String, String> entry : openingMap.entrySet()){
+            String openingSequence = entry.getKey();
+            String openingName = entry.getValue();
+
+            //Wenn aktueller Zug mit Opening übereinstimmt dann break und der Opening Text wird auf den Opening Namen gesetzt
+            if(sanAnnotated.equals(openingSequence)){
+                openingText = openingName;
+                break;
+            }
+        }
         
+        g2.setColor(Color.RED);
         g2.setFont(new Font("SansSerif", Font.BOLD, 14));
         FontMetrics fm = g2.getFontMetrics();
         int textWidth = fm.stringWidth(openingText);
-
         g2.drawString(openingText, openingRectX + (openingRectWidth - textWidth) / 2, openingRectY + 25);
 
         int buttonY = statsY + 5;
@@ -321,6 +331,16 @@ public class ChessPanel extends JPanel {
         g2.dispose();
 
     }
+
+    private String convertMoveListToUci(List<Move> moves) {
+        StringBuilder sb = new StringBuilder();
+        for (Move move : moves) {
+            sb.append(move.getFrom().value().toLowerCase());
+            sb.append(move.getTo().value().toLowerCase());        
+        }
+        return sb.toString();
+    }
+
 
     private void pauseClocks() {
         if (whiteRunning && whiteTimer != null) {

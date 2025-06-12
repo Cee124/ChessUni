@@ -11,42 +11,49 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+
+
 public class OpeningDetection {
 
+    //Methode zur Umwandlung der Eröffnungen in Map Objekte
     public Map<String, String> loadOpenings(String htmlPath) throws IOException {
-        //Resource als Stream laden
+        //Läd Datei aus Klassenpfad, wenn nicht gefunden wir Exception geworfen
         InputStream is = getClass().getResourceAsStream(htmlPath);
         if (is == null) {
             throw new IOException("Resource nicht gefunden: " + htmlPath);
         }
-
-        //InputStream in String umwandeln
+        //Liest als UTF 8 und parst mit Jsoup
         String html = new String(is.readAllBytes(), StandardCharsets.UTF_8);
         Document doc = Jsoup.parse(html);
 
-        //Ziel-Map
+        //Zielmap in der Eröffnungen gespeichert werden sollen
         Map<String, String> openingsMap = new LinkedHashMap<>();
 
-        //Gehe durch alle <b> Elemente mit dem ECO-Namen
-        Elements boldElements = doc.select("b");
+        //Wählt alle b Elemente aus der html
+        Elements openingNames = doc.select("b");
 
-        for (Element b : boldElements) {
-            String name = b.text();
+        //Iteration durch alle Eröffnungsnamen
+        for (Element b : openingNames) {
+            String name = b.text(); // value für die Map
 
-            //Gehe durch die nachfolgenden Siblings, um SAN-Züge zu finden
-            Element current = b.nextElementSibling();
-            while (current != null && current.tagName().equals("br")) {
-                if (current.nextSibling() != null) {
-                    String sanLine = current.nextSibling().toString().trim();
+            // Gehe zum nächsten Node nach <b>
+            org.jsoup.nodes.Node next = b.nextSibling();
 
-                    if (sanLine.matches("^\\d+\\..*")) {
+            while (next != null) {
+                // Wenn es sich um einen TextNode handelt (direkt nach <b>), ist das die Zugfolge
+                if (next instanceof org.jsoup.nodes.TextNode) {
+                    String sanLine = ((org.jsoup.nodes.TextNode) next).text().trim();
+
+                    // Prüfen, ob es eine gültige Zugfolge ist (z.B. mit 1. oder 1 e4)
+                    if (sanLine.matches("^\\d+\\s.*") || sanLine.matches("^\\d+\\.?.*")) {
                         String uci = convertSanToUci(sanLine);
                         if (uci != null && !uci.isEmpty()) {
                             openingsMap.put(uci, name);
                         }
+                        break; // fertig mit dieser Eröffnung
                     }
                 }
-                current = current.nextElementSibling();
+                next = next.nextSibling(); // nächster Node (könnte <br> sein, ignorieren wir)
             }
         }
         return openingsMap;
@@ -55,6 +62,7 @@ public class OpeningDetection {
     private static String convertSanToUci(String sanMoves) {
         String cleaned = sanMoves.replaceAll("\\d+\\.", "").trim();
         String[] moves = cleaned.split("\\s+");
+        System.out.println(cleaned);
 
         StringBuilder sb = new StringBuilder();
         for (String move : moves) {
