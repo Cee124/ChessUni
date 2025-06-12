@@ -20,8 +20,8 @@ Zudem fiel mir die Integration im Chesspanel mit JavaSwing, MouseListener etc sc
 Ruwen:
 
 - Was habe ich letzte Woche gemacht?
--->
+-->Funktion zum Laden/Speichern von PGN Dateien und starten von geladenen Spielen + Aufbau eigener Stellungen mit beliebigen Figuren
 - Was plane ich diese Woche zu tun?
--->
+-->PGN Handling Klasse finalisieren. Einfachen Multiplayer verbessern. Spielfluss grafisch schöner gestalten
 - Auf welche (größeren) Probleme bin ich gestoßen?
--->
+-->Nutzung der echten SAN-Notation / MouseListener + JavaSwing
