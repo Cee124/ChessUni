@@ -503,3 +503,53 @@ Wichtige Hinweise
     Vermeide es, große Bilder ohne Skalierung direkt in die UI zu laden – das wirkt schnell unprofessionell.
 
 Wenn du willst, kann ich dir auch zeigen, wie man Icons aus dem Ressourcenordner (/resources) eines Maven- oder Gradle-Projekts lädt.
+
+11. Prompt: was machen damit fenster direkt in voll bild geöffnet wird? package de.thm.informatik.chess.ui;
+
+import java.io.IOException;
+
+import javax.swing.JFrame;
+
+public class MainWindow {
+    public static void main(String[] args) throws IOException {
+        JFrame frame = new JFrame("Chess");
+        ChessPanel panel = new ChessPanel();
+        panel.addClock(5);
+        frame.add(panel);
+        frame.pack();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+
+    }
+}
+--> Wenn du einfach nur willst, dass das Fenster ohne Schnickschnack den gesamten Bildschirm ausfüllt (ohne exklusiven Vollbildmodus, ohne spezielle API-Nutzung), kannst du es so machen:
+
+import javax.swing.JFrame;
+import java.awt.Toolkit;
+import java.awt.Dimension;
+import java.io.IOException;
+
+public class MainWindow {
+    public static void main(String[] args) throws IOException {
+        JFrame frame = new JFrame("Chess");
+        ChessPanel panel = new ChessPanel();
+        panel.addClock(5);
+        frame.add(panel);
+
+        // Bildschirmgröße holen und setzen
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        frame.setSize(screenSize);
+        frame.setLocation(0, 0);
+
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+    }
+}
+
+Kurz erklärt:
+
+    Toolkit.getDefaultToolkit().getScreenSize() liefert die Auflösung des Bildschirms.
+
+    frame.setSize(...) und frame.setLocation(0, 0) setzen das Fenster auf volle Größe, oben links beginnend.
+
+    Kein setUndecorated, kein GraphicsDevice, kein echter exklusiver Modus – nur einfacher, sauberer Vollbild-Look.
