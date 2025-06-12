@@ -55,6 +55,8 @@ public class ChessPanel extends JPanel {
 
     private final OpeningDetection detector;
     private final Map<String, String> openingMap;
+
+    private String lastDetectedOpening = "Keine Eröffnung erkannt";
     
     public ChessPanel() throws IOException {
         detector = new OpeningDetection();
@@ -156,7 +158,7 @@ public class ChessPanel extends JPanel {
 
         //Rechte Bildschirmhälfte dunkelgrün färben
         Graphics2D g2 = (Graphics2D) g.create();
-        Color colorRightSide = new Color(30, 60, 30);
+        Color colorRightSide = new Color(180, 180, 180);
         int panelWidth = getWidth();
         int panelHeight = getHeight();
         g2.setColor(colorRightSide);
@@ -186,7 +188,7 @@ public class ChessPanel extends JPanel {
         List<Move> currentMoves = getMoveHistory();
         String currentUciMoves = convertMoveListToUci(currentMoves);
         String sanAnnotated = UciParser.convertUciToAnnotatedMoves(currentUciMoves);
-        String openingText = "Keine Eröffnung erkannt";
+        String openingText = lastDetectedOpening;
 
         for(Map.Entry<String, String> entry : openingMap.entrySet()){
             String openingSequence = entry.getKey();
@@ -194,6 +196,7 @@ public class ChessPanel extends JPanel {
 
             //Wenn aktueller Zug mit Opening übereinstimmt dann break und der Opening Text wird auf den Opening Namen gesetzt
             if(sanAnnotated.equals(openingSequence)){
+                lastDetectedOpening = openingName;
                 openingText = openingName;
                 break;
             }
@@ -282,20 +285,22 @@ public class ChessPanel extends JPanel {
         int statsRectX = statsX; 
         int statsRectY = statsY + 40;  
         int statsRectWidth = 300;
-        int statsRectHeight = Math.max(40, moves.size() * 20 + 20);
+        int visibleMoves = Math.min(10, moves.size());
+        int statsRectHeight = Math.max(40, visibleMoves * 20 + 20);
 
         g2.setColor(Color.BLACK);
         g2.setStroke(new BasicStroke(3));
         g2.drawRect(operationRectX, operationRectY, operactionRectWidth, operationRectHeight);
         g2.drawRect(statsRectX, statsRectY, statsRectWidth, statsRectHeight);
 
-        int yLine = statsY + 60;
-        for (int i = 0; i < moves.size(); i++) {
+        int start = Math.max(0, moves.size() - 10);
+        for (int i = start; i < moves.size(); i++) {
             Predicate<Integer> isWhite = p -> p % 2 == 0;
             String color = isWhite.test(i) ? "Weiß" : "Schwarz";
             String moveText = moves.get(i).toString();
 
-            int textY = statsY + 55 + i * 20;
+            int offset = i - start;
+            int textY = statsY + 55 + offset * 20;
 
             g2.setFont(new Font("Monospaced", Font.BOLD, 14));
             g2.setColor(isWhite.test(i) ? Color.WHITE : Color.BLACK);
@@ -309,8 +314,7 @@ public class ChessPanel extends JPanel {
 
             //Trennlinie
             g2.setColor(Color.BLACK);
-            g2.drawLine(statsX, yLine, statsX + 300, yLine);
-            yLine += 20;
+            g2.drawLine(statsX, statsY + 60 + offset * 20, statsX + 300, statsY + 60 + offset * 20);
         }
         g2.dispose();
 
