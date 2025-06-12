@@ -460,3 +460,46 @@ protected void paintComponent(Graphics g) {
     // (Rest deines Codes folgt wie gehabt)
     ...
 }
+
+10. Prompt: wie fügt man in JavaSwing Icons mit ImageIcon hinzu, und wie formatiert man sie auf kleinere größen?
+--> In Java Swing kannst du mit ImageIcon Icons zu Komponenten wie JLabel, JButton oder JMenuItem hinzufügen. Wenn du ein Icon einfügst und die Größe anpassen willst, musst du das Bild skalieren, bevor du es dem ImageIcon übergibst. Hier ist eine nüchterne, saubere Lösung:
+Beispiel: Icon in JButton einfügen und skalieren
+
+import javax.swing.*;
+import java.awt.*;
+
+public class IconBeispiel {
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = new JFrame("Icon Beispiel");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+            // Ursprüngliches Image laden
+            ImageIcon originalIcon = new ImageIcon("pfad/zum/bild.png");
+
+            // Bild skalieren (z. B. auf 32x32 Pixel)
+            Image skaliertesBild = originalIcon.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
+            ImageIcon skaliertesIcon = new ImageIcon(skaliertesBild);
+
+            // Icon in Button einfügen
+            JButton button = new JButton("Mit Icon", skaliertesIcon);
+
+            frame.add(button);
+            frame.pack();
+            frame.setLocationRelativeTo(null);
+            frame.setVisible(true);
+        });
+    }
+}
+
+Wichtige Hinweise
+
+    Image.SCALE_SMOOTH sorgt für bessere Qualität beim Skalieren.
+
+    Du kannst natürlich auch andere Komponenten wie JLabel oder JMenuItem verwenden:
+
+    JLabel label = new JLabel(skaliertesIcon);
+
+    Vermeide es, große Bilder ohne Skalierung direkt in die UI zu laden – das wirkt schnell unprofessionell.
+
+Wenn du willst, kann ich dir auch zeigen, wie man Icons aus dem Ressourcenordner (/resources) eines Maven- oder Gradle-Projekts lädt.
