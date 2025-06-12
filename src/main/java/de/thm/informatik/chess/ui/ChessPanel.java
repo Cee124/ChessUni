@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 
 import javax.swing.ImageIcon;
@@ -64,16 +65,11 @@ public class ChessPanel extends JPanel {
     public ChessPanel() throws IOException {
         detector = new OpeningDetection();
 
-        try (InputStream in = getClass().getClassLoader().getResourceAsStream("Openings/eco_openings.html")) {
-            if (in == null) {
-                System.out.println("Opening-Datei nicht gefunden!");
-                openings = new ArrayList<>();
-            } else {
-                openings = detector.loadOpenings(in);
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            openings = new ArrayList<>();
+        Map<String, String> openingMap = detector.loadOpenings("/Openings/eco_openings.html");
+        if(openingMap.isEmpty()){
+            System.out.println("LEEEEEEEEEEEEEEEEEER");
+        }else{
+            openingMap.forEach((uci, name) -> System.out.println(uci + " : " + name));
         }
 
         setLayout(null);
@@ -128,10 +124,6 @@ public class ChessPanel extends JPanel {
                             System.out.println(m.toString());
                         }
 
-                        detectedOpening = detector.detectOpening(getMoveHistory(), openings);
-                        if (detectedOpening != null) {
-                            System.out.println("Erkannte Eröffnung: " + detectedOpening);
-                        }
                         repaint();
 
                         System.out.println("Move executed: " + move);

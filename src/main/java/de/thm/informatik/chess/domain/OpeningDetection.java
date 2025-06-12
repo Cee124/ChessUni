@@ -1,110 +1,65 @@
 package de.thm.informatik.chess.domain;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
-
-import com.github.bhlangonijr.chesslib.Board;
-import com.github.bhlangonijr.chesslib.game.Game;
-import com.github.bhlangonijr.chesslib.move.Move;
-import com.github.bhlangonijr.chesslib.pgn.PgnHolder;
 
 public class OpeningDetection {
 
-    public List<Opening> loadOpenings(InputStream inputStream) throws IOException {
-        List<Opening> openings = new ArrayList<>();
+    public Map<String, String> loadOpenings(String htmlPath) throws IOException {
+        //Resource als Stream laden
+        InputStream is = getClass().getResourceAsStream(htmlPath);
+        if (is == null) {
+            throw new IOException("Resource nicht gefunden: " + htmlPath);
+        }
 
-        Document doc = Jsoup.parse(inputStream, "UTF-8", "");
+        //InputStream in String umwandeln
+        String html = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+        Document doc = Jsoup.parse(html);
+
+        //Ziel-Map
+        Map<String, String> openingsMap = new LinkedHashMap<>();
+
+        //Gehe durch alle <b> Elemente mit dem ECO-Namen
         Elements boldElements = doc.select("b");
 
-        for (Element bold : boldElements) {
-            String headerText = bold.text().trim();
+        for (Element b : boldElements) {
+            String name = b.text();
 
-            if (!headerText.matches("^[A-E]\\d{2} .*")) continue;
+            //Gehe durch die nachfolgenden Siblings, um SAN-Züge zu finden
+            Element current = b.nextElementSibling();
+            while (current != null && current.tagName().equals("br")) {
+                if (current.nextSibling() != null) {
+                    String sanLine = current.nextSibling().toString().trim();
 
-            String[] parts = headerText.split(" ", 2);
-            if (parts.length < 2) continue;
-
-            String eco = parts[0].trim();
-            String name = parts[1].trim();
-
-            Node next = bold.nextSibling();
-            while (next != null && (next.nodeName().equals("br") || next.toString().trim().isEmpty())) {
-                next = next.nextSibling();
-            }
-
-            if (next != null && next.nodeName().equals("#text")) {
-                String moveText = next.toString().trim();
-                if (!moveText.isEmpty()) {
-                    List<String> uciMoves = convertToUciMoves(moveText);
-                    if(!uciMoves.isEmpty()){
-                        openings.add(new Opening(eco, name, uciMoves));
+                    if (sanLine.matches("^\\d+\\..*")) {
+                        String uci = convertSanToUci(sanLine);
+                        if (uci != null && !uci.isEmpty()) {
+                            openingsMap.put(uci, name);
+                        }
                     }
                 }
+                current = current.nextElementSibling();
             }
         }
-        return openings;
+        return openingsMap;
     }
 
-    public Opening detectOpening(List<Move> playedMoves, List<Opening> openings){
-        Opening bestMatch = null;
-        int maxMatchedMoves = -1;
+    private static String convertSanToUci(String sanMoves) {
+        String cleaned = sanMoves.replaceAll("\\d+\\.", "").trim();
+        String[] moves = cleaned.split("\\s+");
 
-        for(Opening opening : openings){
-            if(opening.matches(playedMoves)){
-                if(opening.getMoves().size() > maxMatchedMoves){
-                    bestMatch = opening;
-                    maxMatchedMoves = opening.getMoves().size();
-                }
-            }
+        StringBuilder sb = new StringBuilder();
+        for (String move : moves) {
+            sb.append(move.toLowerCase());
         }
-        return bestMatch;
+        return sb.toString();
     }
-
-    private List<String> convertToUciMoves(String moveText) {
-        List<String> uciMoves = new ArrayList<>();
-
-        try {
-            File tempPgn = File.createTempFile("opening", ".pgn");
-            tempPgn.deleteOnExit();
-
-            String pgn = "[Event \"Opening\"]\n\n" + moveText + " *";
-            java.nio.file.Files.write(tempPgn.toPath(), pgn.getBytes());
-
-            PgnHolder holder = new PgnHolder(tempPgn.getAbsolutePath());
-            holder.loadPgn();
-
-            if (holder.getGames().isEmpty()) {
-                System.out.println("Konnte keine Partien parsen.");
-                return uciMoves;
-            }
-
-            Game game = holder.getGames().get(0);
-            Board board = new Board();
-
-            for (Move move : game.getHalfMoves()) {
-                board.doMove(move);
-                String from = move.getFrom().toString().toLowerCase();
-                String to = move.getTo().toString().toLowerCase();
-                String promo = (move.getPromotion() != null) ? move.getPromotion().getSanSymbol().toLowerCase() : "";
-                String uci = from + to + promo;
-                uciMoves.add(uci);
-            }
-
-        } catch (Exception e) {
-            System.err.println("Fehler beim Parsen von PGN: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        return uciMoves;
-    }
-
 }
