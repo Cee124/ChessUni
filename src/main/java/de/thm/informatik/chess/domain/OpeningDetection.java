@@ -62,7 +62,6 @@ public class OpeningDetection {
     private static String convertSanToUci(String sanMoves) {
         String cleaned = sanMoves.replaceAll("\\d+\\.", "").trim();
         String[] moves = cleaned.split("\\s+");
-        System.out.println(cleaned);
 
         StringBuilder sb = new StringBuilder();
         for (String move : moves) {

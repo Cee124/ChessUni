@@ -11,16 +11,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -31,7 +27,6 @@ import com.github.bhlangonijr.chesslib.Square;
 import com.github.bhlangonijr.chesslib.move.Move;
 
 import de.thm.informatik.chess.domain.ChessEngine;
-import de.thm.informatik.chess.domain.Opening;
 import de.thm.informatik.chess.domain.OpeningDetection;
 import de.thm.informatik.chess.domain.UciParser;
 
@@ -65,11 +60,6 @@ public class ChessPanel extends JPanel {
         detector = new OpeningDetection();
 
         openingMap = detector.loadOpenings("/Openings/eco_openings.html");
-        if(openingMap.isEmpty()){
-            System.out.println("LEEEEEEEEEEEEEEEEEER");
-        }else{
-            openingMap.forEach((uci, name) -> System.out.println(uci + " : " + name));
-        }
 
         setLayout(null);
 
@@ -116,12 +106,6 @@ public class ChessPanel extends JPanel {
                         moveHistory.subList(currentMoveIndex, moveHistory.size()).clear();
                         moveHistory.add(move);
                         currentMoveIndex = moveHistory.size();
-
-                        List<Move> currentMoves = getMoveHistory();
-                        String currentUciMoves = convertMoveListToUci(currentMoves);
-                        System.out.println(currentUciMoves);
-                        String sanAnnotated = UciParser.convertUciToAnnotatedMoves(currentUciMoves);
-                        System.out.println("Annotierte Züge: " + sanAnnotated);
 
                         repaint();
 
@@ -172,10 +156,10 @@ public class ChessPanel extends JPanel {
 
         //Rechte Bildschirmhälfte dunkelgrün färben
         Graphics2D g2 = (Graphics2D) g.create();
-        Color mattDunkelgruen = new Color(30, 60, 30);
+        Color colorRightSide = new Color(30, 60, 30);
         int panelWidth = getWidth();
         int panelHeight = getHeight();
-        g2.setColor(mattDunkelgruen);
+        g2.setColor(colorRightSide);
         g2.fillRect(panelWidth / 2, 0, panelWidth / 2, panelHeight);
 
         int boardRightEdge = 8 * squareSize;
@@ -234,7 +218,7 @@ public class ChessPanel extends JPanel {
         rewindButton.setBounds(rewindButtonX, buttonY, 30, 30);
         forwardButton.setBounds(forwardButtonX, buttonY, 30, 30);
 
-        whiteKing.setBounds(centerInStats +60 + 40, buttonY, 30, 30);
+        whiteKing.setBounds(centerInStats + 60 + 40, buttonY, 30, 30);
         blackKing.setBounds(centerInStats - 30 - 20, buttonY, 30, 30);
 
         //Draw chess board
