@@ -118,3 +118,345 @@ Erklärung:
 Du kannst das Viereck anpassen, indem du die Position und Größe in drawRect() veränderst.
 
 Möchtest du das Viereck z. B. interaktiv machen (verschiebbar, klickbar etc.)?
+
+4. Prompt: das ist die darstellung der openings 1 d4 Nf6 2 c4 g6 und das ist die darstellung meiner aktuellen züge während des spiels
+b2b3g8f6e2e4f6e4f2f3e4g5h2h4h7h6h4g5h6g5 ich möchte diese vergleichen um openings zu erkennen, wie muss ich das format anpassen?
+--> Vollständige Java-Methode (UCI-String → lesbare Züge mit Zugnummern)
+
+import com.github.bhlangonijr.chesslib.*;
+import com.github.bhlangonijr.chesslib.move.Move;
+
+public class ChessMoveParser {
+
+    public static String convertUciToAnnotatedMoves(String uciMoves) {
+        Board board = new Board();
+        StringBuilder sb = new StringBuilder();
+
+        int moveNumber = 1;
+        boolean whiteToMove = true;
+
+        for (int i = 0; i <= uciMoves.length() - 4; i += 4) {
+            String from = uciMoves.substring(i, i + 2).toUpperCase();
+            String to = uciMoves.substring(i + 2, i + 4).toUpperCase();
+
+            Square fromSquare = Square.fromValue(from);
+            Square toSquare = Square.fromValue(to);
+            Move move = new Move(fromSquare, toSquare);
+
+            if (!board.isMoveLegal(move)) {
+                System.out.println("Illegal move: " + from + to);
+                break;
+            }
+
+            if (whiteToMove) {
+                sb.append(moveNumber).append(". ");
+                moveNumber++;
+            }
+
+            // Pseudo-SAN: Bauer = ohne Buchstabe, Figur = Anfangsbuchstabe
+            Piece movingPiece = board.getPiece(fromSquare);
+            String pieceSymbol = getPieceSymbol(movingPiece);
+
+            sb.append(pieceSymbol).append(from.toLowerCase()).append(to.toLowerCase()).append(" ");
+            board.doMove(move);
+            whiteToMove = !whiteToMove;
+        }
+
+        return sb.toString().trim();
+    }
+
+    private static String getPieceSymbol(Piece piece) {
+        switch (piece.getPieceType()) {
+            case KNIGHT: return "N";
+            case BISHOP: return "B";
+            case ROOK: return "R";
+            case QUEEN: return "Q";
+            case KING: return "K";
+            default: return ""; // Pawn
+        }
+    }
+
+    public static void main(String[] args) {
+        String uci = "b2b3g8f6e2e4f6e4f2f3e4g5h2h4h7h6h4g5h6g5";
+        String moves = convertUciToAnnotatedMoves(uci);
+        System.out.println("Züge: " + moves);
+    }
+}
+
+Füge in ChessPanel folgende Methode hinzu (z. B. unterhalb von getMoveHistory()):
+
+private String convertMoveListToUci(List<Move> moves) {
+    StringBuilder sb = new StringBuilder();
+    for (Move move : moves) {
+        sb.append(move.getFrom().value().toLowerCase());
+        sb.append(move.getTo().value().toLowerCase());
+    }
+    return sb.toString();
+}
+
+5. Prompt: die from position soll nicht in den string mit rein package 
+--> Damit die Ausgabe im algebraischen Notationsstil (SAN) ist – ohne die "from"-Position bei Bauernzügen (z. B. e4 statt Pe2e4) und korrekt mit Figurensymbolen für andere Figuren – musst du die Ausgabe-Logik anpassen. Derzeit wird "from.to" für alle Figuren inklusive Bauern verwendet, was nicht dem SAN-Standard entspricht.
+🔧 Änderung: Nur bei Figuren das "from"-Feld anhängen
+
+Ersetze:
+
+sb.append(pieceSymbol).append(from.toLowerCase()).append(to.toLowerCase()).append(" ");
+
+Mit:
+
+if (pieceSymbol.isEmpty()) {
+    // Bauer: nur Zielfeld
+    sb.append(to.toLowerCase()).append(" ");
+} else {
+    // Figuren: Symbol + Zielfeld
+    sb.append(pieceSymbol).append(to.toLowerCase()).append(" ");
+}
+
+6. Prompt: Könnte man die Namen der eröffnungen nicht auch zum key einer hashmap machen und den zug zum value und dann die aktuellen züge mit der eröffnung vergleichen?
+--> HTML parsen und Map aufbauen
+
+Hier der komplette funktionierende Parser, zugeschnitten auf dein HTML:
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+public class EcoHtmlParser {
+
+    public static Map<String, String> parseOpenings(String htmlPath) throws Exception {
+        String html = Files.readString(Paths.get(htmlPath));
+        Document doc = Jsoup.parse(html);
+
+        // Ziel-Map
+        Map<String, String> openingsMap = new LinkedHashMap<>();
+
+        // Gehe durch alle <b> Elemente mit dem ECO-Namen
+        Elements boldElements = doc.select("b");
+
+        for (Element b : boldElements) {
+            String name = b.text(); // z. B. "A04 Reti Opening"
+
+            // Gehe durch die nachfolgenden Siblings, um SAN-Züge zu finden
+            Element current = b.nextElementSibling();
+            while (current != null && current.tagName().equals("br")) {
+                // Hole das tatsächliche Text-Node (direkt nach <br>)
+                if (current.nextSibling() != null) {
+                    String sanLine = current.nextSibling().toString().trim();
+
+                    // Prüfen, ob es wie "1 Nf3" aussieht
+                    if (sanLine.matches("^\\d+\\..*")) {
+                        String uci = convertSanToUci(sanLine);
+                        if (uci != null && !uci.isEmpty()) {
+                            openingsMap.put(uci, name);
+                        }
+                    }
+                }
+                current = current.nextElementSibling();
+            }
+        }
+        return openingsMap;
+    }
+
+    // Dummy-SAN-zu-UCI-Konvertierung – hier brauchst du eine Engine!
+    private static String convertSanToUci(String sanMoves) {
+        // Entferne Zugnummern und splitte in einzelne SAN-Züge
+        String cleaned = sanMoves.replaceAll("\\d+\\.", "").trim();
+        String[] moves = cleaned.split("\\s+");
+
+        // Du brauchst eine echte Umwandlung: SAN -> UCI
+        // Hier nur Dummy: wir machen alles lowercase und hängen es zusammen
+        // z.B. "Nf3 d5" -> "nf3d5"
+        StringBuilder sb = new StringBuilder();
+        for (String move : moves) {
+            sb.append(move.toLowerCase());
+        }
+        return sb.toString();
+    }
+}
+
+7. Prompt: Wie kann ich diese html Datei (...) einlesen?
+--> Was du aus dem HTML lernen solltest:
+
+Die HTML-Struktur ist nicht tabellarisch, sondern:
+
+    Jede Eröffnung beginnt mit einem <B>-Tag:
+    <B>B66 Sicilian, Richter-Rauzer Attack, 7...a6</B>
+
+    Danach folgen die Züge als reiner Text innerhalb eines <BR>-Blocks:
+    1 e4 c5 2 Nf3 d6 3 d4 ...
+
+Die Züge sind in Standard Algebraic Notation (SAN) notiert – nicht in UCI-Notation, die du bisher für deinen Vergleich nutzt.
+Was du jetzt konkret tun musst
+1. HTML richtig parsen (statt tr/td)
+
+Verwende <b>-Elemente, lies ihren Text aus und hole danach den nächsten Textknoten als Zugfolge.
+2. Zugfolge verarbeiten (SAN → Move)
+
+Du musst aus dem SAN-String wie 1 e4 c5 2 Nf3 d6 ... eine Liste von Move-Objekten erzeugen.
+
+Dazu brauchst du ein Dummy-Board und benutzt engine.getLegalMoves() + SAN-Matching (oder eine Bibliothek, die Move.fromSan(...) unterstützt – chesslib bietet das rudimentär mit manuellem Matching).
+🛠 Beispielimplementierung loadOpeningsFromHtml(InputStream in)
+
+public List<Opening> loadOpenings(InputStream inputStream) throws IOException {
+    List<Opening> openings = new ArrayList<>();
+    Document doc = Jsoup.parse(inputStream, "UTF-8", "");
+
+    Elements boldElements = doc.select("b");
+
+    for (Element bold : boldElements) {
+        String headerText = bold.text().trim();
+
+        // Nur Einträge mit ECO-Code (z. B. B66)
+        if (!headerText.matches("^[A-E]\\d{2} .*")) continue;
+
+        String[] parts = headerText.split(" ", 2);
+        if (parts.length < 2) continue;
+
+        String eco = parts[0].trim();
+        String name = parts[1].trim();
+
+        // Zugfolge aus nächstem Textknoten suchen
+        Node next = bold.nextSibling();
+        while (next != null && (next.nodeName().equals("br") || next.toString().trim().isEmpty())) {
+            next = next.nextSibling();
+        }
+
+        if (next != null && next.nodeName().equals("#text")) {
+            String moveText = next.toString().trim();
+            if (!moveText.isEmpty()) {
+                openings.add(new Opening(eco, name, moveText));
+            }
+        }
+    }
+
+    return openings;
+}
+
+8. Prompt: wie baut man in einem chess programm die eröffnungserkennung ein mithilfe folgender webadresse? https://www3.diism.unisi.it/~addabbo/ECO_aperture_scacchi.html
+--> Verwende jsoup, um HTML zu parsen
+
+Füge jsoup zu deinem Projekt hinzu, z. B. über Maven:
+
+<dependency>
+    <groupId>org.jsoup</groupId>
+    <artifactId>jsoup</artifactId>
+    <version>1.17.2</version>
+</dependency>
+
+Code: Parser + Erkennung
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+public class OpeningRecognizer {
+
+    public static class Opening {
+        String ecoCode;
+        String name;
+        List<String> moves;
+
+        public Opening(String ecoCode, String name, String moveString) {
+            this.ecoCode = ecoCode;
+            this.name = name;
+            this.moves = List.of(moveString.trim().split("\\s+"));
+        }
+
+        public boolean matches(List<String> playedMoves) {
+            if (playedMoves.size() < moves.size()) return false;
+            for (int i = 0; i < moves.size(); i++) {
+                if (!playedMoves.get(i).equals(moves.get(i))) return false;
+            }
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            return ecoCode + " – " + name;
+        }
+    }
+
+    public static List<Opening> loadOpenings(File htmlFile) throws Exception {
+        List<Opening> openingList = new ArrayList<>();
+
+        Document doc = Jsoup.parse(htmlFile, "UTF-8");
+        Elements rows = doc.select("tr");
+
+        for (Element row : rows) {
+            Elements cols = row.select("td");
+            if (cols.size() >= 3) {
+                String eco = cols.get(0).text().trim();
+                String name = cols.get(1).text().trim();
+                String moveStr = cols.get(2).text().trim();
+
+                if (!eco.isEmpty() && !name.isEmpty() && !moveStr.isEmpty()) {
+                    openingList.add(new Opening(eco, name, moveStr));
+                }
+            }
+        }
+
+        return openingList;
+    }
+
+    public static Opening detectOpening(List<String> playedMoves, List<Opening> openings) {
+        Opening bestMatch = null;
+        int maxMatchedMoves = -1;
+
+        for (Opening opening : openings) {
+            if (opening.matches(playedMoves)) {
+                if (opening.moves.size() > maxMatchedMoves) {
+                    bestMatch = opening;
+                    maxMatchedMoves = opening.moves.size();
+                }
+            }
+        }
+
+        return bestMatch;
+    }
+
+    public static void main(String[] args) throws Exception {
+        File htmlFile = new File("eco_openings.html");
+        List<Opening> openings = loadOpenings(htmlFile);
+
+        // Beispielhafte gespielte Züge
+        List<String> played = List.of("e4", "e5", "Nf3", "Nc6");
+
+        Opening match = detectOpening(played, openings);
+        if (match != null) {
+            System.out.println("Erkannte Eröffnung: " + match);
+        } else {
+            System.out.println("Keine Eröffnung erkannt.");
+        }
+    }
+}
+
+9. Prompt: ich will dass der Hintergrund des gesamten rechten bildschirm hälfte mattes dunkel grün ist
+--> Ergänze ganz am Anfang der paintComponent(Graphics g) Methode folgenden Code:
+
+@Override
+protected void paintComponent(Graphics g) {
+    super.paintComponent(g);
+
+    // Rechte Bildschirmhälfte dunkelgrün färben
+    Graphics2D g2 = (Graphics2D) g.create();
+    Color mattDunkelgruen = new Color(0, 51, 0); // matter dunkler Grünton
+    int panelWidth = getWidth();
+    int panelHeight = getHeight();
+    g2.setColor(mattDunkelgruen);
+    g2.fillRect(panelWidth / 2, 0, panelWidth / 2, panelHeight);
+    g2.dispose();
+
+    // (Rest deines Codes folgt wie gehabt)
+    ...
+}
