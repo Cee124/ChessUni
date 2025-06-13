@@ -159,7 +159,7 @@ public class ChessPanel extends JPanel {
 
     //Methode für forward-Button Logik
     private void fastForwardMove(){
-        //Wenn rewinded wurde also index kleiner ist als anzahl gemachter Züge
+        //Wenn index größer/gleich zuganzahl dann wird nichts gemacht
         if(currentMoveIndex >= moveHistory.size()){
             return;
         }
