@@ -57,6 +57,13 @@ public class ChessPanel extends JPanel {
     private final Map<String, String> openingMap;
 
     private String lastDetectedOpening = "Keine Eröffnung erkannt";
+
+    private boolean rewindSelectedPanel = true;
+
+    public void setRewind(boolean enableRewind){
+        this.rewindSelectedPanel = enableRewind;
+        System.out.println("Rewind gesetzt auf: " + enableRewind);
+    }
     
     public ChessPanel() throws IOException {
         detector = new OpeningDetection();
@@ -142,6 +149,9 @@ public class ChessPanel extends JPanel {
 
     //Methode für rewind-Button Logik
     private void rewindMove(){
+        if(!rewindSelectedPanel){
+            return;
+        }
         //Wenn Züge gemacht wurden
         if(currentMoveIndex > 0){
             //index auf moveHistory.size() - 1 setzen
