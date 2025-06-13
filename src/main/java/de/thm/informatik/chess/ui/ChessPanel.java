@@ -63,28 +63,29 @@ public class ChessPanel extends JPanel {
 
         openingMap = detector.loadOpenings("/Openings/eco_openings.html");
 
+        //Um Objekte individuell anordnen zu können
         setLayout(null);
 
+        //Icons für Buttons holen
         forwardButton = new JButton(IconLoader.FORWARD_ICON);
         rewindButton = new JButton(IconLoader.REWIND_ICON);
         startButton = new JButton(IconLoader.START_ICON);
         pauseButton = new JButton(IconLoader.PAUSE_ICON);
-
         whiteKing = new JButton(IconLoader.WHITEKING_ICON);
         blackKing = new JButton(IconLoader.BLACKKING_ICON);
         
+        //Buttons dem Panel hinzufügen
         add(forwardButton);
         add(rewindButton);
         add(startButton);
         add(pauseButton);
-
         add(whiteKing);
         add(blackKing);
 
-        //Buttons für forward und rewind TBC
+        //Button Logik
         forwardButton.addActionListener(e -> fastForwardMove());
         rewindButton.addActionListener(e -> rewindMove());
-        startButton.addActionListener(e -> startWhiteClock());
+        startButton.addActionListener(e -> startClock());
         pauseButton.addActionListener(e -> pauseClocks());
 
         addMouseListener(new MouseAdapter() {
@@ -101,58 +102,79 @@ public class ChessPanel extends JPanel {
                     }
                 } else {
                     Move move = new Move(selectedSquare, clickedSquare);
+                    //Liste aller legalen Moves
                     List<Move> legalMoves = engine.getLegalMoves();
 
+                    //Wenn die Liste eine Zug enthält
                     if (legalMoves.contains(move)) {
+                        //Zug wird ausgeführt
                         engine.makeMove(move);
                         moveHistory.subList(currentMoveIndex, moveHistory.size()).clear();
                         moveHistory.add(move);
                         currentMoveIndex = moveHistory.size();
 
+                        //Aktualisierung der Ansicht
                         repaint();
 
+                        //Wenn weiß am Zug ist, weiße Uhr starten
                         if(engine.getBoard().getSideToMove() == WHITE){
                             startWhiteClock();
+                        //Sonst schwarze Uhr starten
                         }else{
                             startBlackClock();
                         }
+                    //Wenn kein legaler Zug erkannt wurde Fehlermeldung ausgeben
                     } else {
                         System.out.println("Illegal move: " + move);
                     }
                     selectedSquare = null;
+                    //Ansicht akutalisieren
                     repaint();
                 }
             }
         });
     }
 
+    //Methode um Liste gemachter Züge zurückzugeben
     public static LinkedList<Move> getMoveHistory() {
         return moveHistory;
     }
 
+    //Methode für rewind-Button Logik
     private void rewindMove(){
+        //Wenn Züge gemacht wurden
         if(currentMoveIndex > 0){
+            //index auf moveHistory.size() - 1 setzen
             currentMoveIndex--;
+            //Schachgame zurücksetzen
             engine.reset();
+            //Alle Züge machen die in der moveHistory gespeichert sind bis zu index(moveHistory.size() - 1)
             for(int i = 0; i < currentMoveIndex; i++){
                 engine.makeMove(moveHistory.get(i));
             }
+            //Ansicht aktualisieren
             repaint();  
         }
     }
 
+    //Methode für forward-Button Logik
     private void fastForwardMove(){
-        List<Move> moveHistoryForward = getMoveHistory();
-
-        if(currentMoveIndex < moveHistoryForward.size()){
-            currentMoveIndex++;
-            Move currentMove = moveHistoryForward.get(currentMoveIndex);
-            engine.makeMove(currentMove);
-            repaint();
+        //Wenn rewinded wurde also index kleiner ist als anzahl gemachter Züge
+        if(currentMoveIndex >= moveHistory.size()){
+            return;
         }
+        //Zug aus der Zugliste holen
+        Move forwardMove = moveHistory.get(currentMoveIndex);
+        //Rückgängig gemachten Zug ausführen
+        engine.makeMove(forwardMove);
+        //Index wieder hochzählen
+        currentMoveIndex++;
+        //Ansicht aktualisieren
+        repaint();
     }
 
     @Override
+    //Methode zum Formatieren und Bearbeiten von Objekten
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
@@ -164,14 +186,14 @@ public class ChessPanel extends JPanel {
         g2.setColor(colorRightSide);
         g2.fillRect(panelWidth / 2, 0, panelWidth / 2, panelHeight);
 
-        int boardRightEdge = 8 * squareSize;
-        int boardBottomEdge = 8 * squareSize;
-    
+        int boardPixelSize = 8 * squareSize;
         
-        int clockX = boardRightEdge + 50;
-        int whiteClockY = boardBottomEdge - 50;
+        //Specs für Uhren Positionen
+        int clockX = boardPixelSize + 50;
+        int whiteClockY = boardPixelSize - 50;
         int blackClockY = 50;                   
-    
+        
+        //General specs für Stats Window
         int statsX = getWidth() - 300 - 100;
         int statsY = 200;
 
@@ -181,47 +203,62 @@ public class ChessPanel extends JPanel {
         int openingRectWidth = 300;
         int openingRectHeight = 40;
 
+        //Rechteck schwarz und dicke 3 und dann Zeichnen mit specs
         g2.setColor(Color.BLACK);
         g2.setStroke(new BasicStroke(3));
         g2.drawRect(openingRectX, openingRectY, openingRectWidth, openingRectHeight);
 
+        //Initialisierung um Openings darstellen zu können
         List<Move> currentMoves = getMoveHistory();
         String currentUciMoves = convertMoveListToUci(currentMoves);
         String sanAnnotated = UciParser.convertUciToAnnotatedMoves(currentUciMoves);
+        //Variablenzuweisung um letzte erkannte Eröffnung zu speichern
         String openingText = lastDetectedOpening;
 
+        //Durch Map mit Eröffnungen iterieren
         for(Map.Entry<String, String> entry : openingMap.entrySet()){
+            //Key und Value der Map in extra Variablen speichern
             String openingSequence = entry.getKey();
             String openingName = entry.getValue();
 
-            //Wenn aktueller Zug mit Opening übereinstimmt dann break und der Opening Text wird auf den Opening Namen gesetzt
+            //Wenn aktuelle Zugabfolge mit Opening übereinstimmt dann break und der openingText wird auf den openingName gesetzt
             if(sanAnnotated.equals(openingSequence)){
+                //Damit falls nichts mehr erkannt wird die letzte Eröffnung gespeichert wird
                 lastDetectedOpening = openingName;
                 openingText = openingName;
                 break;
             }
         }
         
+        //Schrift für OpeningText 
         g2.setColor(Color.RED);
         g2.setFont(new Font("SansSerif", Font.BOLD, 14));
         FontMetrics fm = g2.getFontMetrics();
+        //Ermittelt breite von openingText
         int textWidth = fm.stringWidth(openingText);
+        //Opening Text schreiben
         g2.drawString(openingText, openingRectX + (openingRectWidth - textWidth) / 2, openingRectY + 25);
 
+        //Y Koordinate für alle Buttons
         int buttonY = statsY + 5;
 
+        //X Koordianten für rewind und forward Button
         int rewindButtonX = statsX + 10;
         int forwardButtonX = statsX + 260;
+        //Breite des Rechtecks
         int operationRectWidth = 300;
+        //Jeder button 30x30 und Abstand zwischen Buttons 20
         int buttonsTotalWidth = 30 + 20 + 30;
         int centerInStats = statsX + (operationRectWidth - buttonsTotalWidth) / 2;
 
+        //Koordinaten für Button Positionen
         pauseButton.setBounds(centerInStats, buttonY, 30, 30);
         startButton.setBounds(centerInStats + 30 + 20, buttonY, 30, 30);
         rewindButton.setBounds(rewindButtonX, buttonY, 30, 30);
         forwardButton.setBounds(forwardButtonX, buttonY, 30, 30);
-
+        //Von Mitte des Rechtecks ausgehend rechts von start -> IconSize: 2*(30x30) + Abstand: 2*(20x20)
         whiteKing.setBounds(centerInStats + 60 + 40, buttonY, 30, 30);
+        //Eine IconSize + Abstand links von der Mitte
         blackKing.setBounds(centerInStats - 30 - 20, buttonY, 30, 30);
 
         //Draw chess board
@@ -256,19 +293,31 @@ public class ChessPanel extends JPanel {
         g.setFont(new Font("TIMES NEW ROMAN", Font.BOLD, 40));
 
         //White clock
+        //Wenn weiße Uhr läuft dann rote Darstellung sonst schwarz
         g.setColor(whiteRunning ? Color.RED : Color.BLACK);
+        //Da in ms dargestellt muss man durch 1000 teilen für Sekunden
         long whiteSumSeconds = whiteRemaining / 1000;
+        //von sekunden in minuten / 60
         long whiteSumMinutes = whiteSumSeconds / 60;
+        //Anzahl Sekunden in Abhängigkeit von Minuten
         long whiteSeconds = whiteSumSeconds % 60;
+        //Darstellung der Uhr festlegen
         String whiteTime = String.format("%02d:%02d", whiteSumMinutes, whiteSeconds);
+        //Weße Uhr zeichnen
         g.drawString(whiteTime, clockX, whiteClockY);
 
         //Black clock
+        //Wenn schwarze Uhr läuft dann rote Darstellung sonst schwarz
         g.setColor(blackRunning ? Color.RED : Color.BLACK);
+        //Da in ms dargestellt muss man durch 1000 teilen für Sekunden
         long blackSumSeconds = blackRemaining / 1000;
+        //von sekunden in minuten / 60
         long blackSumMinutes = blackSumSeconds / 60;
+        //Anzahl Sekunden in Abhängigkeit von Minuten
         long blackSeconds = blackSumSeconds % 60;
+        //Darstellung der Uhr festlegen
         String blackTime = String.format("%02d:%02d", blackSumMinutes, blackSeconds);
+        //Schwarze Uhr zeichnen
         g.drawString(blackTime, clockX, blackClockY);
     
         //Draw stats display
@@ -277,42 +326,50 @@ public class ChessPanel extends JPanel {
 
         List<Move> moves = getMoveHistory();
 
-        int operationRectX = statsX;
         int operationRectY = statsY;
-        int operactionRectWidth = 300;
         int operationRectHeight = 40;
 
-        int statsRectX = statsX; 
         int statsRectY = statsY + 40;  
         int statsRectWidth = 300;
+        //Wenn züge < 10 dann zuganzahl und sonst 10
         int visibleMoves = Math.min(10, moves.size());
-        int statsRectHeight = Math.max(40, visibleMoves * 20 + 20);
+        //mind. 40 und maximal 220(da visibleMoves max 10)
+        int statsRectHeight = Math.max(40, visibleMoves * 20);
 
         g2.setColor(Color.BLACK);
         g2.setStroke(new BasicStroke(3));
-        g2.drawRect(operationRectX, operationRectY, operactionRectWidth, operationRectHeight);
-        g2.drawRect(statsRectX, statsRectY, statsRectWidth, statsRectHeight);
+        g2.drawRect(statsX, operationRectY, operationRectWidth, operationRectHeight);
+        g2.drawRect(statsX, statsRectY, statsRectWidth, statsRectHeight);
 
+        //Wenn mehr als 10 Züge (0, 12-10 = 0, 2 -> index 2 bis 11) sonst 0 bis move.size()
+        //also wird hier der Startindex ermittelt
         int start = Math.max(0, moves.size() - 10);
         for (int i = start; i < moves.size(); i++) {
+            //Liefert boolean zurück ob gerade
             Predicate<Integer> isWhite = p -> p % 2 == 0;
+            //Wenn gerade dann zug weiß sonst schwarz
             String color = isWhite.test(i) ? "Weiß" : "Schwarz";
+            //aktueller move als text in variable speichern
             String moveText = moves.get(i).toString();
 
+            //Y Position wird dynamisch ermittelt je nachdem wie vielter zug es ist
             int offset = i - start;
             int textY = statsY + 55 + offset * 20;
 
+            //Wenn i gerade dann ist die Schriftfarbe weiß sonst schwarz
             g2.setFont(new Font("Monospaced", Font.BOLD, 14));
             g2.setColor(isWhite.test(i) ? Color.WHITE : Color.BLACK);
 
+            //einzelteile zusammensetzen
             String label = color + ":";
             FontMetrics fm1 = g2.getFontMetrics();
             int labelWidth = fm1.stringWidth(label);
 
+            //label und text zeichnen
             g2.drawString(label, statsX + 100, textY);
             g2.drawString(moveText, statsX + 100 + labelWidth + 10, textY);
 
-            //Trennlinie
+            //Trennlinie erweiter sich dynamisch
             g2.setColor(Color.BLACK);
             g2.drawLine(statsX, statsY + 60 + offset * 20, statsX + 300, statsY + 60 + offset * 20);
         }
@@ -320,16 +377,16 @@ public class ChessPanel extends JPanel {
 
     }
 
+    //Methode um aktuelle züge in Uci Format darzustellen
     private String convertMoveListToUci(List<Move> moves) {
         StringBuilder sb = new StringBuilder();
         for (Move move : moves) {
-            sb.append(move.getFrom().value().toLowerCase());
-            sb.append(move.getTo().value().toLowerCase());        
+            sb.append(move.toString()); //Check if ok       
         }
         return sb.toString();
     }
 
-
+    //Methode um Uhren zu pausieren
     private void pauseClocks() {
         if (whiteRunning && whiteTimer != null) {
             whiteTimer.stop();
@@ -350,7 +407,9 @@ public class ChessPanel extends JPanel {
         return Square.valueOf(squareName);
     }
 
+    //Methode um Uhren hinzuzufügen
     public void addClock(int timeType) {
+        //Falls die Timer laufen sollen sie stoppen
         if(whiteTimer != null){
             whiteTimer.stop();
         }
@@ -358,45 +417,67 @@ public class ChessPanel extends JPanel {
             blackTimer.stop();
         }
 
+        //vorgegeben Zeit in ms darstellen z.B. 3Min = 180.000ms
         long remaining = timeType * 60 * 1000;
 
+        //Beide Uhren auf gleiche verbleibende Zeit setzen
         whiteRemaining = remaining;
         blackRemaining = remaining;
 
+        //Alle 1000ms also jede sekunde wird refreshed
         whiteTimer = new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                //Jede Sekunde 1000ms von der verbleibenden Zeit abziehen
                 whiteRemaining -= 1000;
+                //Wenn Keine zeit mehr übrig, timer stoppen
                 if (whiteRemaining <= 0) {
                     whiteRemaining = 0;
                     whiteRunning = false;
                     whiteTimer.stop();
                 }
+                //Ansicht aktualisieren
                 repaint();
             }
         });
-
+        //Alle 1000ms also jede sekunde wird refreshed
         blackTimer = new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                //Jede Sekunde 1000ms von der verbleibenden Zeit abziehen
                 blackRemaining -= 1000;
+                //Wenn keine Zeit mehr übrig, timer stoppen
                 if (blackRemaining <= 0) {
                     blackRemaining = 0;
                     blackRunning = false;
                     blackTimer.stop();
                 }
+                //Ansicht aktualisieren
                 repaint();
             }
         });
     }
 
-    public void startWhiteClock(){
-        blackRunning = false;
+    public void startClock(){
+        if(moveHistory.size() > 1){
+            if(engine.getBoard().getSideToMove() == WHITE){
+                startWhiteClock();
+            }else{
+                startBlackClock();
+            }
+        }else{
+            startWhiteClock();
+        }
+    }
 
+    //Methode um weiße Uhr zu starten
+    public void startWhiteClock(){
+        //schwarze Uhr stoppen
+        blackRunning = false;
         if(blackTimer != null){
             blackTimer.stop();
         }
-
+        //weiße Uhr starten
         whiteRunning = true;
         if(whiteTimer != null){
             whiteTimer.start();
@@ -404,12 +485,12 @@ public class ChessPanel extends JPanel {
     }
 
     private void startBlackClock(){
+        //weiße Uhr stoppen
         whiteRunning = false;
-
         if(whiteTimer != null){
             whiteTimer.stop();
         }
-
+        //schwarze Uhr starten
         blackRunning = true;
         if(blackTimer != null){
             blackTimer.start();
