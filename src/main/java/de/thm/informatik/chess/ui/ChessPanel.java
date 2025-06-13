@@ -95,7 +95,7 @@ public class ChessPanel extends JPanel {
         //Button Logik
         forwardButton.addActionListener(e -> fastForwardMove());
         rewindButton.addActionListener(e -> rewindMove());
-        startButton.addActionListener(e -> startClock());
+        startButton.addActionListener(e -> startClocks());
         pauseButton.addActionListener(e -> pauseClocks());
 
         addMouseListener(new MouseAdapter() {
@@ -115,7 +115,6 @@ public class ChessPanel extends JPanel {
                     //Liste aller legalen Moves
                     List<Move> legalMoves = engine.getLegalMoves();
 
-                    Side currentSide = engine.getBoard().getSideToMove(); // Wer ist JETZT am Zug (vor dem Move)
                     //Wenn die Liste eine Zug enthält
                     if (legalMoves.contains(move)) {
                         //Zug wird ausgeführt
@@ -124,12 +123,19 @@ public class ChessPanel extends JPanel {
                         moveHistory.add(move);
                         currentMoveIndex = moveHistory.size();
 
-                        //Wenn weiß am Zug ist, weiße Uhr starten
-                        if(currentSide == WHITE){
-                            startWhiteClock();
-                        //Sonst schwarze Uhr starten
+                        Side nextSide = engine.getBoard().getSideToMove();
+                        if(nextSide == WHITE) {
+                            if(color){
+                                startWhiteClock();
+                            }else{
+                                startBlackClock();
+                            }
                         }else{
-                            startBlackClock();
+                            if(color){
+                                startBlackClock();
+                            }else{
+                                startWhiteClock();
+                            }
                         }
                         //Aktualisierung der Ansicht
                         repaint();
@@ -243,7 +249,7 @@ public class ChessPanel extends JPanel {
         //Rechteck schwarz und dicke 3 und dann Zeichnen mit specs
         g2.setColor(Color.BLACK);
         g2.setStroke(new BasicStroke(3));
-        g2.drawRect(openingRectX, openingRectY, openingRectWidth, openingRectHeight);
+        g2.drawRoundRect(openingRectX, openingRectY, openingRectWidth, openingRectHeight, 20, 20);
 
         //Initialisierung um Openings darstellen zu können
         List<Move> currentMoves = getMoveHistory();
@@ -405,6 +411,8 @@ public class ChessPanel extends JPanel {
 
     public void setColor(boolean isWhite){
         this.color = isWhite;
+        startClocks();
+        repaint();
     }
 
     //Methode um aktuelle züge in Uci Format darzustellen
@@ -488,22 +496,34 @@ public class ChessPanel extends JPanel {
         });
     }
 
-    public void startClock() {
-        if (moveHistory.size() > 1) {
-            if (engine.getBoard().getSideToMove() == WHITE) {
-                startBlackClock();
-            } else {
+    public void startClocks() {
+        // Stoppe beide Uhren
+        pauseClocks();
+    
+        if (moveHistory.isEmpty()) {
+            if(color){
                 startWhiteClock();
-            }
-        } else {
-            if (color) {
-                startWhiteClock(); // <- problematisch
-            } else {
+            }else{
                 startBlackClock();
+            }
+        }else {
+            // Wenn bereits Züge gemacht wurden, starte die Uhr für die aktuelle Seite
+            Side sideToMove = engine.getBoard().getSideToMove();
+            if (sideToMove == WHITE) {
+                if(color){
+                    startWhiteClock();
+                }else{
+                    startBlackClock();
+                }
+            }else {
+                if(color){
+                    startBlackClock();
+                }else{
+                    startWhiteClock();
+                }
             }
         }
     }
-
 
     //Methode um weiße Uhr zu starten
     public void startWhiteClock(){
