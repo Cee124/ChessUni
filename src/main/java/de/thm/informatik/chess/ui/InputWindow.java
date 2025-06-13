@@ -61,8 +61,8 @@ public class InputWindow extends JPanel {
         modus5.addActionListener(e -> timeType = 5);
         modus10.addActionListener(e -> timeType = 10);
 
-        whiteKing.addActionListener(e -> System.out.println("White"));
-        blackKing.addActionListener(e -> System.out.println("Black"));
+        whiteKing.addActionListener(e -> panel.setColor(true));
+        blackKing.addActionListener(e -> panel.setColor(false));
 
         rewindBox.addActionListener(e -> {
             rewindSelected = !rewindSelected;

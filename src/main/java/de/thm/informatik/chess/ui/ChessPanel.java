@@ -22,6 +22,8 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 
 import com.github.bhlangonijr.chesslib.Piece;
+import com.github.bhlangonijr.chesslib.Side;
+
 import static com.github.bhlangonijr.chesslib.Side.WHITE;
 import com.github.bhlangonijr.chesslib.Square;
 import com.github.bhlangonijr.chesslib.move.Move;
@@ -59,6 +61,7 @@ public class ChessPanel extends JPanel {
     private String lastDetectedOpening = "Keine Eröffnung erkannt";
 
     private boolean rewindSelectedPanel = false;
+    private boolean color = true;
 
     public void setRewind(boolean enableRewind){
         this.rewindSelectedPanel = enableRewind;
@@ -98,8 +101,8 @@ public class ChessPanel extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                int file = e.getX() / squareSize;
-                int rank = 7 - (e.getY() / squareSize);
+                int file = color ? e.getX() / squareSize : 7 - (e.getX() / squareSize);
+                int rank = color ? 7 - (e.getY() / squareSize) : e.getY() / squareSize;
                 Square clickedSquare = squareFromCoords(rank, file);
 
                 if (selectedSquare == null) {
@@ -112,6 +115,7 @@ public class ChessPanel extends JPanel {
                     //Liste aller legalen Moves
                     List<Move> legalMoves = engine.getLegalMoves();
 
+                    Side currentSide = engine.getBoard().getSideToMove(); // Wer ist JETZT am Zug (vor dem Move)
                     //Wenn die Liste eine Zug enthält
                     if (legalMoves.contains(move)) {
                         //Zug wird ausgeführt
@@ -120,16 +124,15 @@ public class ChessPanel extends JPanel {
                         moveHistory.add(move);
                         currentMoveIndex = moveHistory.size();
 
-                        //Aktualisierung der Ansicht
-                        repaint();
-
                         //Wenn weiß am Zug ist, weiße Uhr starten
-                        if(engine.getBoard().getSideToMove() == WHITE){
+                        if(currentSide == WHITE){
                             startWhiteClock();
                         //Sonst schwarze Uhr starten
                         }else{
                             startBlackClock();
                         }
+                        //Aktualisierung der Ansicht
+                        repaint();
                     //Wenn kein legaler Zug erkannt wurde Fehlermeldung ausgeben
                     } else {
                         System.out.println("Illegal move: " + move);
@@ -288,14 +291,23 @@ public class ChessPanel extends JPanel {
         //Draw pieces
         for (int rank = 0; rank < 8; rank++) {
             for (int file = 0; file < 8; file++) {
+                int drawRank = color ? 7 - rank : rank;
+                int drawFile = color ? file : 7 - file;
+        
+                //Brettfeld
+                if ((rank + file) % 2 == 0) {
+                    g.setColor(Color.lightGray);
+                } else {
+                    g.setColor(Color.white);
+                }
+                g.fillRect(drawFile * squareSize, drawRank * squareSize, squareSize, squareSize);
+
                 Square sq = squareFromCoords(rank, file);
                 Piece piece = engine.getBoard().getPiece(sq);
                 if (piece != Piece.NONE) {
                     Image img = PieceImageLoader.getImage(piece);
                     if (img != null) {
-                        int x = file * squareSize;
-                        int y = (7 - rank) * squareSize;
-                        g.drawImage(img, x, y, squareSize, squareSize, this);
+                        g.drawImage(img, drawFile * squareSize, drawRank * squareSize, squareSize, squareSize, this);
                     }
                 }
             }
@@ -391,6 +403,10 @@ public class ChessPanel extends JPanel {
 
     }
 
+    public void setColor(boolean isWhite){
+        this.color = isWhite;
+    }
+
     //Methode um aktuelle züge in Uci Format darzustellen
     private String convertMoveListToUci(List<Move> moves) {
         StringBuilder sb = new StringBuilder();
@@ -472,17 +488,22 @@ public class ChessPanel extends JPanel {
         });
     }
 
-    public void startClock(){
-        if(moveHistory.size() > 1){
-            if(engine.getBoard().getSideToMove() == WHITE){
+    public void startClock() {
+        if (moveHistory.size() > 1) {
+            if (engine.getBoard().getSideToMove() == WHITE) {
+                startBlackClock();
+            } else {
                 startWhiteClock();
-            }else{
+            }
+        } else {
+            if (color) {
+                startWhiteClock(); // <- problematisch
+            } else {
                 startBlackClock();
             }
-        }else{
-            startWhiteClock();
         }
     }
+
 
     //Methode um weiße Uhr zu starten
     public void startWhiteClock(){
