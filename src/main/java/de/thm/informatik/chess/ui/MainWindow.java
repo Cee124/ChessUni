@@ -8,17 +8,28 @@ import javax.swing.JFrame;
 
 public class MainWindow {
     public static void main(String[] args) throws IOException {
-        JFrame frame = new JFrame("Chess");
+
+        JFrame frameInput = new JFrame("Input Window");
+        InputWindow input = new InputWindow();
+        frameInput.setContentPane(input);
+
+        frameInput.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frameInput.setResizable(false);
+        frameInput.setSize(400, 300);    
+        frameInput.setLocationRelativeTo(null);
+        frameInput.setVisible(true);
+
+        JFrame framePanel = new JFrame("Chess");
         ChessPanel panel = new ChessPanel();
         panel.addClock(5);
-        frame.add(panel);
+        framePanel.add(panel);
 
         // Bildschirmgröße holen und setzen
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        frame.setSize(screenSize);
-        frame.setLocation(0, 0);
+        framePanel.setSize(screenSize);
+        framePanel.setLocation(0, 0);
 
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setVisible(true);
+        framePanel.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        framePanel.setVisible(true);
     }
 }

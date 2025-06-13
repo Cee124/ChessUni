@@ -174,6 +174,30 @@ public class ChessPanel extends JPanel {
     }
 
     @Override
+    //Methode zum festlegen der Button Positionen
+    public void doLayout() {
+        super.doLayout();
+
+        int statsX = getWidth() - 300 - 100;
+        int statsY = 200;
+
+        int buttonY = statsY + 5;
+        int rewindButtonX = statsX + 10;
+        int forwardButtonX = statsX + 260;
+        int operationRectWidth = 300;
+        int buttonsTotalWidth = 30 + 20 + 30;
+        int centerInStats = statsX + (operationRectWidth - buttonsTotalWidth) / 2;
+
+        pauseButton.setBounds(centerInStats, buttonY, 30, 30);
+        startButton.setBounds(centerInStats + 30 + 20, buttonY, 30, 30);
+        rewindButton.setBounds(rewindButtonX, buttonY, 30, 30);
+        forwardButton.setBounds(forwardButtonX, buttonY, 30, 30);
+        whiteKing.setBounds(centerInStats + 60 + 40, buttonY, 30, 30);
+        blackKing.setBounds(centerInStats - 30 - 20, buttonY, 30, 30);
+    }
+
+
+    @Override
     //Methode zum Formatieren und Bearbeiten von Objekten
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -238,28 +262,6 @@ public class ChessPanel extends JPanel {
         int textWidth = fm.stringWidth(openingText);
         //Opening Text schreiben
         g2.drawString(openingText, openingRectX + (openingRectWidth - textWidth) / 2, openingRectY + 25);
-
-        //Y Koordinate für alle Buttons
-        int buttonY = statsY + 5;
-
-        //X Koordianten für rewind und forward Button
-        int rewindButtonX = statsX + 10;
-        int forwardButtonX = statsX + 260;
-        //Breite des Rechtecks
-        int operationRectWidth = 300;
-        //Jeder button 30x30 und Abstand zwischen Buttons 20
-        int buttonsTotalWidth = 30 + 20 + 30;
-        int centerInStats = statsX + (operationRectWidth - buttonsTotalWidth) / 2;
-
-        //Koordinaten für Button Positionen
-        pauseButton.setBounds(centerInStats, buttonY, 30, 30);
-        startButton.setBounds(centerInStats + 30 + 20, buttonY, 30, 30);
-        rewindButton.setBounds(rewindButtonX, buttonY, 30, 30);
-        forwardButton.setBounds(forwardButtonX, buttonY, 30, 30);
-        //Von Mitte des Rechtecks ausgehend rechts von start -> IconSize: 2*(30x30) + Abstand: 2*(20x20)
-        whiteKing.setBounds(centerInStats + 60 + 40, buttonY, 30, 30);
-        //Eine IconSize + Abstand links von der Mitte
-        blackKing.setBounds(centerInStats - 30 - 20, buttonY, 30, 30);
 
         //Draw chess board
         for (int rank = 0; rank < 8; rank++) {
@@ -335,6 +337,8 @@ public class ChessPanel extends JPanel {
         int visibleMoves = Math.min(10, moves.size());
         //mind. 40 und maximal 220(da visibleMoves max 10)
         int statsRectHeight = Math.max(40, visibleMoves * 20);
+
+        int operationRectWidth = 300;
 
         g2.setColor(Color.BLACK);
         g2.setStroke(new BasicStroke(3));

@@ -20,4 +20,9 @@ public class IconLoader {
     public static final ImageIcon WHITEKING_ICON = loadIcon("/Images/wk.png", 30, 30);
     public static final ImageIcon BLACKKING_ICON = loadIcon("/Images/bk.png", 30, 30);
 
+    public static final ImageIcon WHITEKING_ICONX = loadIcon("/Images/wk.png", 60, 60);
+    public static final ImageIcon BLACKKING_ICONX = loadIcon("/Images/bk.png", 60, 60);
+
+    public static final ImageIcon EMPTY_ICON = loadIcon("/Icons/check.png", 30, 30);
+    public static final ImageIcon TICKED_ICON = loadIcon("/Icons/right.png", 30, 30);
 }
