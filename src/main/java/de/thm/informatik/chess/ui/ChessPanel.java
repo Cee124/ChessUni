@@ -58,7 +58,7 @@ public class ChessPanel extends JPanel {
 
     private String lastDetectedOpening = "Keine Eröffnung erkannt";
 
-    private boolean rewindSelectedPanel = true;
+    private boolean rewindSelectedPanel = false;
 
     public void setRewind(boolean enableRewind){
         this.rewindSelectedPanel = enableRewind;
