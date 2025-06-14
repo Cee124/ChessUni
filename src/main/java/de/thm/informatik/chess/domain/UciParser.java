@@ -35,7 +35,7 @@ public class UciParser {
 
             //Wenn der Zug nicht zulässig ist wird eine Fehlermeldung ausgegben und aus der Schleife gebreaked
             if (!board.isMoveLegal(move, false)) {
-                logger.info("Illegal Move: " + from + to);
+                logger.debug("Illegal Move: " + from + to);
                 break;
             }
             //Prüft ob Zug von weiß ist, dann wird Zugnummer vorangeschrieben und hochgezählt

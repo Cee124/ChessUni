@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.jsoup.Jsoup;
@@ -30,7 +31,7 @@ public class OpeningDetection {
         Map<String, String> openingsMap = new LinkedHashMap<>();
 
         //Wählt alle b Elemente aus der html
-        Elements openingNames = doc.select("b");
+        List<Element> openingNames = doc.select("b");
 
         //Iteration durch alle Eröffnungsnamen
         for (Element b : openingNames) {

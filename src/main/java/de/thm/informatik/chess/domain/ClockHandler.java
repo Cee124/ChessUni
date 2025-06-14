@@ -25,7 +25,6 @@ public class ClockHandler {
     private long blackRemaining;
 
     private boolean color = true;
-    private boolean playerPlaysWhite = true;
 
     public ClockHandler(){
     }

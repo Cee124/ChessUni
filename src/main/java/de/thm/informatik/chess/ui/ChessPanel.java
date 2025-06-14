@@ -39,7 +39,7 @@
 
         private Square selectedSquare = null;
         private final int squareSize = 95;
-        private static final LinkedList<Move> moveHistory = new LinkedList<>();
+        private static final List<Move> moveHistory = new LinkedList<>();
 
         private final JButton forwardButton;
         private final JButton rewindButton;
@@ -142,7 +142,7 @@
                             repaint();
                         //Wenn kein legaler Zug erkannt wurde Fehlermeldung ausgeben
                         } else {
-                            logger.info("Illegal Move: " + move);
+                            logger.debug("Illegal Move: " + move);
                         }
                         selectedSquare = null;
                         //Ansicht akutalisieren
@@ -153,7 +153,7 @@
         }
 
         //Methode um Liste gemachter Züge zurückzugeben
-        public static LinkedList<Move> getMoveHistory() {
+        public static List<Move> getMoveHistory() {
             return moveHistory;
         }
 

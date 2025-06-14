@@ -33,8 +33,7 @@ public class PieceImageLoader {
             pieceImages.put(Piece.BLACK_QUEEN, ImageIO.read(PieceImageLoader.class.getResource("/images/bq.png")));
             pieceImages.put(Piece.BLACK_KING, ImageIO.read(PieceImageLoader.class.getResource("/images/bk.png")));
         } catch (IOException e) {
-            e.printStackTrace();
-            logger.info("Fehler beim Laden der Figurenbilder");
+            logger.debug("Fehler beim Laden der Figurenbilder");
         }
     }
 
