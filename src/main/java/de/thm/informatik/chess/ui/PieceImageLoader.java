@@ -4,11 +4,18 @@ import java.awt.Image;
 import java.io.IOException;
 import java.util.EnumMap;
 import java.util.Map;
+
 import javax.imageio.ImageIO;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.github.bhlangonijr.chesslib.Piece;
+
 
 public class PieceImageLoader {
     private static final Map<Piece, Image> pieceImages = new EnumMap<>(Piece.class);
+    private static final Logger logger = LogManager.getLogger(PieceImageLoader.class);
 
     static {
         try {
@@ -27,7 +34,7 @@ public class PieceImageLoader {
             pieceImages.put(Piece.BLACK_KING, ImageIO.read(PieceImageLoader.class.getResource("/images/bk.png")));
         } catch (IOException e) {
             e.printStackTrace();
-            System.err.println("Fehler beim Laden der Figurenbilder!");
+            logger.info("Fehler beim Laden der Figurenbilder");
         }
     }
 

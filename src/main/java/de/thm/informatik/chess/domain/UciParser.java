@@ -1,11 +1,16 @@
 package de.thm.informatik.chess.domain;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.github.bhlangonijr.chesslib.Board;
 import com.github.bhlangonijr.chesslib.Piece;
 import com.github.bhlangonijr.chesslib.Square;
 import com.github.bhlangonijr.chesslib.move.Move;
 
 public class UciParser {
+
+    private static final Logger logger = LogManager.getLogger(UciParser.class);
 
     //Methode nimmt Uci Zugfolge und wandelt in San um
     public static String convertUciToAnnotatedMoves(String uciMoves) {
@@ -30,7 +35,7 @@ public class UciParser {
 
             //Wenn der Zug nicht zulässig ist wird eine Fehlermeldung ausgegben und aus der Schleife gebreaked
             if (!board.isMoveLegal(move, false)) {
-                System.out.println("Illegal move: " + from + to);
+                logger.info("Illegal Move: " + from + to);
                 break;
             }
             //Prüft ob Zug von weiß ist, dann wird Zugnummer vorangeschrieben und hochgezählt
