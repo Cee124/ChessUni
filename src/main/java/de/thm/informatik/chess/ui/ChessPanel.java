@@ -7,8 +7,6 @@
     import java.awt.Graphics;
     import java.awt.Graphics2D;
     import java.awt.Image;
-    import java.awt.event.ActionEvent;
-    import java.awt.event.ActionListener;
     import java.awt.event.MouseAdapter;
     import java.awt.event.MouseEvent;
     import java.io.IOException;
@@ -19,31 +17,26 @@
 
     import javax.swing.JButton;
     import javax.swing.JPanel;
-    import javax.swing.Timer;
 
     import org.apache.logging.log4j.LogManager;
     import org.apache.logging.log4j.Logger;
 
     import com.github.bhlangonijr.chesslib.Piece;
     import com.github.bhlangonijr.chesslib.Side;
-
     import static com.github.bhlangonijr.chesslib.Side.WHITE;
     import com.github.bhlangonijr.chesslib.Square;
     import com.github.bhlangonijr.chesslib.move.Move;
 
     import de.thm.informatik.chess.domain.ChessEngine;
+    import de.thm.informatik.chess.domain.ClockHandler;
     import de.thm.informatik.chess.domain.OpeningDetection;
     import de.thm.informatik.chess.domain.UciParser;
 
     public class ChessPanel extends JPanel {
 
-        private Timer whiteTimer;
-        private Timer blackTimer;
-        private boolean whiteRunning = false;
-        private boolean blackRunning = false;
-        private long whiteRemaining;
-        private long blackRemaining;
         private ChessEngine engine = new ChessEngine();
+        private ClockHandler handler;
+
         private Square selectedSquare = null;
         private final int squareSize = 95;
         private static final LinkedList<Move> moveHistory = new LinkedList<>();
@@ -72,7 +65,11 @@
             this.rewindSelectedPanel = enableRewind;
         }
         
-        public ChessPanel() throws IOException {
+        public ChessPanel(ClockHandler handler) throws IOException {
+            this.handler = handler;
+            handler.setPanel(this);
+            handler.setEngine(engine);
+            handler.addClock(5);
             detector = new OpeningDetection();
 
             openingMap = detector.loadOpenings("/Openings/eco_openings.html");
@@ -99,8 +96,8 @@
             //Button Logik
             forwardButton.addActionListener(e -> fastForwardMove());
             rewindButton.addActionListener(e -> rewindMove());
-            startButton.addActionListener(e -> startClocks());
-            pauseButton.addActionListener(e -> pauseClocks());
+            startButton.addActionListener(e -> handler.startClocks());
+            pauseButton.addActionListener(e -> handler.pauseClocks());
 
             addMouseListener(new MouseAdapter() {
                 @Override
@@ -130,15 +127,15 @@
                             Side nextSide = engine.getBoard().getSideToMove();
                             if(nextSide == WHITE) {
                                 if(color){
-                                    startWhiteClock();
+                                    handler.startWhiteClock();
                                 }else{
-                                    startBlackClock();
+                                    handler.startBlackClock();
                                 }
                             }else{
                                 if(color){
-                                    startBlackClock();
+                                    handler.startBlackClock();
                                 }else{
-                                    startWhiteClock();
+                                    handler.startWhiteClock();
                                 }
                             }
                             //Aktualisierung der Ansicht
@@ -328,29 +325,19 @@
 
             //White clock
             //Wenn weiße Uhr läuft dann rote Darstellung sonst schwarz
-            g.setColor(whiteRunning ? Color.RED : Color.BLACK);
+            g.setColor(handler.isWhiteRunning() ? Color.RED : Color.BLACK);
             //Da in ms dargestellt muss man durch 1000 teilen für Sekunden
-            long whiteSumSeconds = whiteRemaining / 1000;
-            //von sekunden in minuten / 60
-            long whiteSumMinutes = whiteSumSeconds / 60;
-            //Anzahl Sekunden in Abhängigkeit von Minuten
-            long whiteSeconds = whiteSumSeconds % 60;
-            //Darstellung der Uhr festlegen
-            String whiteTime = String.format("%02d:%02d", whiteSumMinutes, whiteSeconds);
+            long whiteTimeMs = handler.getWhiteRemaining();
+            String whiteTime = formatTime(whiteTimeMs);
             //Weße Uhr zeichnen
             g.drawString(whiteTime, clockX, whiteClockY);
 
             //Black clock
             //Wenn schwarze Uhr läuft dann rote Darstellung sonst schwarz
-            g.setColor(blackRunning ? Color.RED : Color.BLACK);
+            g.setColor(handler.isBlackRunning() ? Color.RED : Color.BLACK);
             //Da in ms dargestellt muss man durch 1000 teilen für Sekunden
-            long blackSumSeconds = blackRemaining / 1000;
-            //von sekunden in minuten / 60
-            long blackSumMinutes = blackSumSeconds / 60;
-            //Anzahl Sekunden in Abhängigkeit von Minuten
-            long blackSeconds = blackSumSeconds % 60;
-            //Darstellung der Uhr festlegen
-            String blackTime = String.format("%02d:%02d", blackSumMinutes, blackSeconds);
+            long blackTimeMs = handler.getBlackRemaining();
+            String blackTime = formatTime(blackTimeMs);
             //Schwarze Uhr zeichnen
             g.drawString(blackTime, clockX, blackClockY);
         
@@ -413,9 +400,18 @@
 
         }
 
+        //Methode um Zeitanzeige im format mm:ss zu erstellen
+        private String formatTime(long millis) {
+            long totalSeconds = millis / 1000;
+            long minutes = totalSeconds / 60;
+            long seconds = totalSeconds % 60;
+            return String.format("%02d:%02d", minutes, seconds);
+        }
+
+        //Methode um Spielfarbe festzulegen
         public void setColor(boolean isWhite){
             this.color = isWhite;
-            startClocks();
+            handler.setColor(isWhite);
             repaint();
         }
 
@@ -428,20 +424,6 @@
             return sb.toString();
         }
 
-        //Methode um Uhren zu pausieren
-        private void pauseClocks() {
-            if (whiteRunning && whiteTimer != null) {
-                whiteTimer.stop();
-                whiteRunning = false;
-            }
-            if (blackRunning && blackTimer != null) {
-                blackTimer.stop();
-                blackRunning = false;
-            }
-            repaint();
-        }
-
-
         private Square squareFromCoords(int rank, int file) {
             char fileChar = (char) ('A' + file);
             char rankChar = (char) ('1' + rank);
@@ -449,111 +431,4 @@
             return Square.valueOf(squareName);
         }
 
-        //Methode um Uhren hinzuzufügen
-        public void addClock(int timeType) {
-            //Falls die Timer laufen sollen sie stoppen
-            if(whiteTimer != null){
-                whiteTimer.stop();
-            }
-            if(blackTimer != null){
-                blackTimer.stop();
-            }
-
-            //vorgegeben Zeit in ms darstellen z.B. 3Min = 180.000ms
-            long remaining = timeType * 60 * 1000;
-
-            //Beide Uhren auf gleiche verbleibende Zeit setzen
-            whiteRemaining = remaining;
-            blackRemaining = remaining;
-
-            //Alle 1000ms also jede sekunde wird refreshed
-            whiteTimer = new Timer(1000, new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    //Jede Sekunde 1000ms von der verbleibenden Zeit abziehen
-                    whiteRemaining -= 1000;
-                    //Wenn Keine zeit mehr übrig, timer stoppen
-                    if (whiteRemaining <= 0) {
-                        whiteRemaining = 0;
-                        whiteRunning = false;
-                        whiteTimer.stop();
-                    }
-                    //Ansicht aktualisieren
-                    repaint();
-                }
-            });
-            //Alle 1000ms also jede sekunde wird refreshed
-            blackTimer = new Timer(1000, new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    //Jede Sekunde 1000ms von der verbleibenden Zeit abziehen
-                    blackRemaining -= 1000;
-                    //Wenn keine Zeit mehr übrig, timer stoppen
-                    if (blackRemaining <= 0) {
-                        blackRemaining = 0;
-                        blackRunning = false;
-                        blackTimer.stop();
-                    }
-                    //Ansicht aktualisieren
-                    repaint();
-                }
-            });
-        }
-
-        public void startClocks() {
-            // Stoppe beide Uhren
-            pauseClocks();
-        
-            if (moveHistory.isEmpty()) {
-                if(color){
-                    startWhiteClock();
-                }else{
-                    startBlackClock();
-                }
-            }else {
-                // Wenn bereits Züge gemacht wurden, starte die Uhr für die aktuelle Seite
-                Side sideToMove = engine.getBoard().getSideToMove();
-                if (sideToMove == WHITE) {
-                    if(color){
-                        startWhiteClock();
-                    }else{
-                        startBlackClock();
-                    }
-                }else {
-                    if(color){
-                        startBlackClock();
-                    }else{
-                        startWhiteClock();
-                    }
-                }
-            }
-        }
-
-        //Methode um weiße Uhr zu starten
-        public void startWhiteClock(){
-            //schwarze Uhr stoppen
-            blackRunning = false;
-            if(blackTimer != null){
-                blackTimer.stop();
-            }
-            //weiße Uhr starten
-            whiteRunning = true;
-            if(whiteTimer != null){
-                whiteTimer.start();
-            }
-        }
-
-        private void startBlackClock(){
-            //weiße Uhr stoppen
-            whiteRunning = false;
-            if(whiteTimer != null){
-                whiteTimer.stop();
-            }
-            //schwarze Uhr starten
-            blackRunning = true;
-            if(blackTimer != null){
-                blackTimer.start();
-            }
-        }
-
-    }
+}

@@ -12,6 +12,8 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import de.thm.informatik.chess.domain.ClockHandler;
+
 public class InputWindow extends JPanel {
 
     private final JButton modus3;
@@ -30,22 +32,21 @@ public class InputWindow extends JPanel {
     private int timeType;
 
     private ChessPanel panel;
+    private ClockHandler handler;
 
     public InputWindow() throws IOException{
-        panel = new ChessPanel();
+        this.handler = new ClockHandler();
+        this.panel = new ChessPanel(handler);
 
         setLayout(null);
 
         modus3 = new JButton("3 Min");
         modus5 = new JButton("5 Min");
         modus10 = new JButton("10 Min");
-
         whiteKing = new JButton(IconLoader.WHITEKING_ICONX);
         blackKing = new JButton(IconLoader.BLACKKING_ICONX);
-
         rewindText = new JLabel("Rewind? ");
         rewindBox = new JButton(IconLoader.EMPTY_ICON);
-
         enter = new JButton("Enter");
 
         add(modus3);
@@ -57,10 +58,18 @@ public class InputWindow extends JPanel {
         add(rewindBox);
         add(enter);
 
-        modus3.addActionListener(e -> timeType = 3);
-        modus5.addActionListener(e -> timeType = 5);
-        modus10.addActionListener(e -> timeType = 10);
+        //Default value für Timer
+        timeType = 5;
 
+        modus3.addActionListener(e -> {
+            handler.addClock(3);
+        });
+        modus5.addActionListener(e -> {
+            handler.addClock(5);
+        });
+        modus10.addActionListener(e -> {
+            handler.addClock(10);
+        });
         whiteKing.addActionListener(e -> panel.setColor(true));
         blackKing.addActionListener(e -> panel.setColor(false));
 
@@ -74,14 +83,13 @@ public class InputWindow extends JPanel {
                 panel.setRewind(false);
             }
         });
-
+        
         enter.addActionListener(e -> {
             // Schließen des Input-Fensters
             JFrame topFrame = (JFrame) getTopLevelAncestor();
             topFrame.dispose();
 
             JFrame framePanel = new JFrame("Chess");
-            panel.addClock(timeType);
             framePanel.add(panel);
 
             // Bildschirmgröße holen und setzen
