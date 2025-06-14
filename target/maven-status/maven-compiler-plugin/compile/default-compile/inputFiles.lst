@@ -1,4 +1,9 @@
-C:\msys64\home\chris\projects\Chess-Testat5-PR2\src\main\java\de\thm\informatik\chess\domain\Figur.java
-C:\msys64\home\chris\projects\Chess-Testat5-PR2\src\main\java\de\thm\informatik\chess\ui\Board.java
-C:\msys64\home\chris\projects\Chess-Testat5-PR2\src\main\java\de\thm\informatik\chess\ui\InputWindow.java
-C:\msys64\home\chris\projects\Chess-Testat5-PR2\src\main\java\de\thm\informatik\chess\ui\MainWindow.java
+C:\Users\luisd\UNI\Chess-Testat5-PR2\src\main\java\de\thm\informatik\chess\domain\UciParser.java
+C:\Users\luisd\UNI\Chess-Testat5-PR2\src\main\java\de\thm\informatik\chess\ui\MainWindow.java
+C:\Users\luisd\UNI\Chess-Testat5-PR2\src\main\java\de\thm\informatik\chess\ui\PieceImageLoader.java
+C:\Users\luisd\UNI\Chess-Testat5-PR2\src\main\java\de\thm\informatik\chess\ui\InputWindow.java
+C:\Users\luisd\UNI\Chess-Testat5-PR2\src\main\java\de\thm\informatik\chess\domain\ClockHandler.java
+C:\Users\luisd\UNI\Chess-Testat5-PR2\src\main\java\de\thm\informatik\chess\ui\IconLoader.java
+C:\Users\luisd\UNI\Chess-Testat5-PR2\src\main\java\de\thm\informatik\chess\domain\OpeningDetection.java
+C:\Users\luisd\UNI\Chess-Testat5-PR2\src\main\java\de\thm\informatik\chess\domain\ChessEngine.java
+C:\Users\luisd\UNI\Chess-Testat5-PR2\src\main\java\de\thm\informatik\chess\ui\ChessPanel.java
