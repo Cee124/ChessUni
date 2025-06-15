@@ -40,6 +40,14 @@ public class ClockHandler {
     public void setColor(boolean isWhite){
         this.color = isWhite;
     }
+    
+    public void setWhiteRemaining(long time) {
+        this.whiteRemaining = time;
+    }
+
+    public void setBlackRemaining(long time) {
+        this.blackRemaining = time;
+    }
 
     //Methode um Uhren zu pausieren
     public void pauseClocks() {

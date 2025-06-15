@@ -29,7 +29,8 @@
 
     import de.thm.informatik.chess.domain.ChessEngine;
     import de.thm.informatik.chess.domain.ClockHandler;
-    import de.thm.informatik.chess.domain.OpeningDetection;
+import de.thm.informatik.chess.domain.GameState;
+import de.thm.informatik.chess.domain.OpeningDetection;
     import de.thm.informatik.chess.domain.UciParser;
 
     public class ChessPanel extends JPanel {
@@ -45,6 +46,9 @@
         private final JButton rewindButton;
         private final JButton startButton;
         private final JButton pauseButton;
+        private final JButton quicksaveButton;
+        private final JButton quickloadButton;
+
 
         private final JButton whiteKing;
         private final JButton blackKing;
@@ -58,6 +62,8 @@
 
         private boolean rewindSelectedPanel = false;
         private boolean color = true;
+        
+        private GameState quickSaveState = null;
 
         private static final Logger logger = LogManager.getLogger(ChessPanel.class);
 
@@ -84,6 +90,8 @@
             pauseButton = new JButton(IconLoader.PAUSE_ICON);
             whiteKing = new JButton(IconLoader.WHITEKING_ICON);
             blackKing = new JButton(IconLoader.BLACKKING_ICON);
+            quicksaveButton = new JButton("Quicksave");
+            quickloadButton = new JButton("Quickload");
             
             //Buttons dem Panel hinzufügen
             add(forwardButton);
@@ -92,12 +100,22 @@
             add(pauseButton);
             add(whiteKing);
             add(blackKing);
+            add(quicksaveButton);
+            add(quickloadButton);
 
             //Button Logik
             forwardButton.addActionListener(e -> fastForwardMove());
             rewindButton.addActionListener(e -> rewindMove());
             startButton.addActionListener(e -> handler.startClocks());
             pauseButton.addActionListener(e -> handler.pauseClocks());
+            
+            quicksaveButton.addActionListener(e -> {
+                quicksave();
+            });
+            
+            quickloadButton.addActionListener(e -> {
+                quickload();
+            });
 
             addMouseListener(new MouseAdapter() {
                 @Override
@@ -207,6 +225,8 @@
             int operationRectWidth = 300;
             int buttonsTotalWidth = 30 + 20 + 30;
             int centerInStats = statsX + (operationRectWidth - buttonsTotalWidth) / 2;
+            int quicksaveX = statsX;
+            int quicksaveY = buttonY + 40;
 
             pauseButton.setBounds(centerInStats, buttonY, 30, 30);
             startButton.setBounds(centerInStats + 30 + 20, buttonY, 30, 30);
@@ -214,6 +234,8 @@
             forwardButton.setBounds(forwardButtonX, buttonY, 30, 30);
             whiteKing.setBounds(centerInStats + 60 + 40, buttonY, 30, 30);
             blackKing.setBounds(centerInStats - 30 - 20, buttonY, 30, 30);
+            quicksaveButton.setBounds(quicksaveX + 40, quicksaveY - 90, 100, 30);
+            quickloadButton.setBounds(quicksaveX + 160, quicksaveY - 90, 100, 30);
         }
 
 
@@ -430,5 +452,38 @@
             String squareName = "" + fileChar + rankChar;
             return Square.valueOf(squareName);
         }
+        
+        public void quicksave() {
+            quickSaveState = new GameState(engine.getBoard().clone(), currentMoveIndex, handler.getWhiteRemaining(), handler.getBlackRemaining());
+            logger.info("Quicksave durchgeführt.");
+        }
+        
+        public void quickload() {
+            if (quickSaveState == null) {
+                logger.warn("Kein Quicksave-Zustand vorhanden.");
+                return;
+            }
+
+            // Engine zurücksetzen und Board wiederherstellen
+            engine.reset();
+            engine.setBoard(quickSaveState.getBoard());
+
+            // Move-Historie neu ausführen bis zum gespeicherten Index
+            currentMoveIndex = quickSaveState.getMoveIndex();
+            for (int i = 0; i < currentMoveIndex; i++) {
+                engine.makeMove(moveHistory.get(i));
+            }
+
+            // Uhrenzustand zurücksetzen
+            handler.setWhiteRemaining(quickSaveState.getWhiteTime());
+            handler.setBlackRemaining(quickSaveState.getBlackTime());
+
+            // Ansicht aktualisieren
+            repaint();
+
+            logger.info("Quickload durchgeführt.");
+        }
+
+
 
 }

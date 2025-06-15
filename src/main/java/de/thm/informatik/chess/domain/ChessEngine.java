@@ -17,6 +17,10 @@ public class ChessEngine {
     public Board getBoard() {
         return board;
     }
+    
+    public void setBoard(Board newBoard) {
+        this.board = newBoard;
+    }
 
     public List<Move> getLegalMoves() {
         return board.legalMoves();
