@@ -25,4 +25,8 @@ public class IconLoader {
 
     public static final ImageIcon EMPTY_ICON = loadIcon("/Icons/check.png", 30, 30);
     public static final ImageIcon TICKED_ICON = loadIcon("/Icons/right.png", 30, 30);
+
+    public static final ImageIcon QUICKSAVE_ICON = loadIcon("/Icons/downloads.png", 30, 30);
+    public static final ImageIcon QUICKLOAD_ICON = loadIcon("/Icons/up-loading.png", 30, 30);
+
 }

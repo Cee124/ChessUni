@@ -49,9 +49,6 @@ public class ChessPanel extends JPanel {
 	private final JButton quicksaveButton;
 	private final JButton quickloadButton;
 
-	private final JButton whiteKing;
-	private final JButton blackKing;
-
 	private int currentMoveIndex;
 
 	private final OpeningDetection detector;
@@ -79,7 +76,7 @@ public class ChessPanel extends JPanel {
 
 		openingMap = detector.loadOpenings("/Openings/eco_openings.html");
 
-		// Um Objekte individuell anordnen zu können
+		//Um Objekte individuell anordnen zu können
 		setLayout(null);
 
 		// Icons für Buttons holen
@@ -87,18 +84,14 @@ public class ChessPanel extends JPanel {
 		rewindButton = new JButton(IconLoader.REWIND_ICON);
 		startButton = new JButton(IconLoader.START_ICON);
 		pauseButton = new JButton(IconLoader.PAUSE_ICON);
-		whiteKing = new JButton(IconLoader.WHITEKING_ICON);
-		blackKing = new JButton(IconLoader.BLACKKING_ICON);
-		quicksaveButton = new JButton("Quicksave");
-		quickloadButton = new JButton("Quickload");
+		quicksaveButton = new JButton(IconLoader.QUICKSAVE_ICON);
+		quickloadButton = new JButton(IconLoader.QUICKLOAD_ICON);
 
 		// Buttons dem Panel hinzufügen
 		add(forwardButton);
 		add(rewindButton);
 		add(startButton);
 		add(pauseButton);
-		add(whiteKing);
-		add(blackKing);
 		add(quicksaveButton);
 		add(quickloadButton);
 
@@ -225,17 +218,13 @@ public class ChessPanel extends JPanel {
 		int operationRectWidth = 300;
 		int buttonsTotalWidth = 30 + 20 + 30;
 		int centerInStats = statsX + (operationRectWidth - buttonsTotalWidth) / 2;
-		int quicksaveX = statsX;
-		int quicksaveY = buttonY + 40;
 
 		pauseButton.setBounds(centerInStats, buttonY, 30, 30);
 		startButton.setBounds(centerInStats + 30 + 20, buttonY, 30, 30);
 		rewindButton.setBounds(rewindButtonX, buttonY, 30, 30);
 		forwardButton.setBounds(forwardButtonX, buttonY, 30, 30);
-		whiteKing.setBounds(centerInStats + 60 + 40, buttonY, 30, 30);
-		blackKing.setBounds(centerInStats - 30 - 20, buttonY, 30, 30);
-		quicksaveButton.setBounds(quicksaveX + 40, quicksaveY - 90, 100, 30);
-		quickloadButton.setBounds(quicksaveX + 160, quicksaveY - 90, 100, 30);
+		quicksaveButton.setBounds(centerInStats - 30 - 20, buttonY, 30, 30);
+		quickloadButton.setBounds(centerInStats + 60 + 40, buttonY, 30, 30);
 
 	}
 
@@ -263,16 +252,16 @@ public class ChessPanel extends JPanel {
 		int statsX = getWidth() - 300 - 100;
 		int statsY = 200;
 
-		// Opening Detection Window
+		//Opening Detection Window
 		int openingRectX = statsX;
-		int openingRectY = statsY - 150;
+		int openingRectY = statsY - 40;
 		int openingRectWidth = 300;
 		int openingRectHeight = 40;
 
 		// Rechteck schwarz und dicke 3 und dann Zeichnen mit specs
 		g2.setColor(Color.BLACK);
 		g2.setStroke(new BasicStroke(3));
-		g2.drawRoundRect(openingRectX, openingRectY, openingRectWidth, openingRectHeight, 20, 20);
+		g2.drawRect(openingRectX, openingRectY, openingRectWidth, openingRectHeight);
 
 		// Initialisierung um Openings darstellen zu können
 		List<Move> currentMoves = getMoveHistory();
