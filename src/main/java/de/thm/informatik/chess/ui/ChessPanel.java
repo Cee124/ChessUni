@@ -10,8 +10,6 @@ import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +21,6 @@ import javax.swing.JPanel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.github.bhlangonijr.chesslib.Board;
 import com.github.bhlangonijr.chesslib.Piece;
 import com.github.bhlangonijr.chesslib.Side;
 import static com.github.bhlangonijr.chesslib.Side.WHITE;
@@ -34,7 +31,6 @@ import de.thm.informatik.chess.domain.ChessEngine;
 import de.thm.informatik.chess.domain.ClockHandler;
 import de.thm.informatik.chess.domain.GameState;
 import de.thm.informatik.chess.domain.OpeningDetection;
-import de.thm.informatik.chess.domain.PGNHandling;
 import de.thm.informatik.chess.domain.UciParser;
 
 public class ChessPanel extends JPanel {
@@ -52,8 +48,6 @@ public class ChessPanel extends JPanel {
 	private final JButton pauseButton;
 	private final JButton quicksaveButton;
 	private final JButton quickloadButton;
-	private final JButton loadPGNButton;
-	private final JButton savePGNButton;
 
 	private final JButton whiteKing;
 	private final JButton blackKing;
@@ -97,8 +91,6 @@ public class ChessPanel extends JPanel {
 		blackKing = new JButton(IconLoader.BLACKKING_ICON);
 		quicksaveButton = new JButton("Quicksave");
 		quickloadButton = new JButton("Quickload");
-		loadPGNButton = new JButton("Load PGN");
-		savePGNButton = new JButton("Save PGN");
 
 		// Buttons dem Panel hinzufügen
 		add(forwardButton);
@@ -109,8 +101,6 @@ public class ChessPanel extends JPanel {
 		add(blackKing);
 		add(quicksaveButton);
 		add(quickloadButton);
-		add(loadPGNButton);
-		add(savePGNButton);
 
 		// Button Logik
 		forwardButton.addActionListener(e -> fastForwardMove());
@@ -124,33 +114,6 @@ public class ChessPanel extends JPanel {
 
 		quickloadButton.addActionListener(e -> {
 			quickload();
-		});
-
-		// Laden eines Spiels
-		loadPGNButton.addActionListener(e -> {
-			javax.swing.JFileChooser fileChooser = new javax.swing.JFileChooser();
-			fileChooser.setDialogTitle("PGN-Datei laden");
-
-			int userSelection = fileChooser.showOpenDialog(this);
-
-			if (userSelection == javax.swing.JFileChooser.APPROVE_OPTION) {
-				java.io.File fileToLoad = fileChooser.getSelectedFile();
-				String filePath = fileToLoad.getAbsolutePath();
-
-				PGNHandling.loadGame(filePath, engine);
-				repaint();
-			}
-		});
-
-		// Speichern eines Spiels
-		savePGNButton.addActionListener(e -> {
-			// für den aktuellen Zeitpunkt im Dateinamen
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
-			String timestamp = LocalDateTime.now().format(formatter);
-			String filePath = "games/game_" + timestamp + ".pgn";
-
-			// PGNHandling handler = new PGNHandling(filePath);
-			// handler.saveGame(ChessPanel.getMoveHistory());
 		});
 
 		addMouseListener(new MouseAdapter() {
@@ -264,10 +227,6 @@ public class ChessPanel extends JPanel {
 		int centerInStats = statsX + (operationRectWidth - buttonsTotalWidth) / 2;
 		int quicksaveX = statsX;
 		int quicksaveY = buttonY + 40;
-		int savePGNX = statsX;
-		int savePGNY = statsY;
-		int loadPGNX = statsX;
-		int loadPGNY = statsY;
 
 		pauseButton.setBounds(centerInStats, buttonY, 30, 30);
 		startButton.setBounds(centerInStats + 30 + 20, buttonY, 30, 30);
@@ -277,8 +236,6 @@ public class ChessPanel extends JPanel {
 		blackKing.setBounds(centerInStats - 30 - 20, buttonY, 30, 30);
 		quicksaveButton.setBounds(quicksaveX + 40, quicksaveY - 90, 100, 30);
 		quickloadButton.setBounds(quicksaveX + 160, quicksaveY - 90, 100, 30);
-		loadPGNButton.setBounds(quicksaveX + 40, quicksaveY - 130, 100, 30);
-		savePGNButton.setBounds(quicksaveX + 160, quicksaveY - 130, 100, 30);
 
 	}
 
@@ -501,7 +458,7 @@ public class ChessPanel extends JPanel {
 	public void quicksave() {
 		quickSaveState = new GameState(engine.getBoard().clone(), currentMoveIndex, handler.getWhiteRemaining(),
 				handler.getBlackRemaining(), engine.getBoard().getSideToMove());
-		logger.info("Quicksave durchgeführt.");
+		logger.info("Quicksave durchgefuehrt.");
 	}
 
 	public void quickload() {
@@ -530,7 +487,7 @@ public class ChessPanel extends JPanel {
 
 		repaint();
 
-		logger.info("Quickload durchgeführt.");
+		logger.info("Quickload durchgefuehrt.");
 	}
 
 }
