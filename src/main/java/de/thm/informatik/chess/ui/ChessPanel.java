@@ -525,6 +525,7 @@ public class ChessPanel extends JPanel {
 		// Uhren zurücksetzen
 		handler.setWhiteRemaining(quickSaveState.getWhiteTime());
 		handler.setBlackRemaining(quickSaveState.getBlackTime());
+		
 		handler.startClocks();
 
 		repaint();

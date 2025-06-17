@@ -17,6 +17,7 @@ public class GameState {
 		this.whiteTime = whiteTime;
 		this.blackTime = blackTime;
 		this.sideToMove = sideToMove;
+		
 	}
 
 	public Board getBoard() {
