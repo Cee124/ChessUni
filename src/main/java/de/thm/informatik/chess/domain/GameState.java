@@ -2,7 +2,6 @@ package de.thm.informatik.chess.domain;
 
 import com.github.bhlangonijr.chesslib.Board;
 
-//Beispielhafter GameState-Konstruktor
 public class GameState {
 
  private Board board;
@@ -17,7 +16,6 @@ public class GameState {
      this.blackTime = blackTime;
  }
 
- // Getter für die Werte – optional, aber nützlich
  public Board getBoard() {
      return board;
  }
