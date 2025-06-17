@@ -31,4 +31,5 @@ public class GameState {
  public long getBlackTime() {
      return blackTime;
  }
+ 
 }
