@@ -287,7 +287,11 @@ public class ChessPanel extends JPanel {
 		}
 
 		// Schrift für OpeningText
-		g2.setColor(Color.RED);
+		if(!openingText.equals("Keine Eröffnung erkannt")){
+			g2.setColor(new Color(60, 179, 13));
+		}else{
+			g2.setColor(new Color(220, 20, 60));
+		}
 		g2.setFont(new Font("SansSerif", Font.BOLD, 14));
 		FontMetrics fm = g2.getFontMetrics();
 		// Ermittelt breite von openingText
