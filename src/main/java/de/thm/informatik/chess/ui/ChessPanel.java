@@ -32,6 +32,7 @@ import de.thm.informatik.chess.domain.ChessEngine;
 import de.thm.informatik.chess.domain.ClockHandler;
 import de.thm.informatik.chess.domain.GameState;
 import de.thm.informatik.chess.domain.OpeningDetection;
+import de.thm.informatik.chess.domain.ShowMoveOption;
 import de.thm.informatik.chess.domain.UciParser;
 
 public class ChessPanel extends JPanel {
@@ -67,6 +68,9 @@ public class ChessPanel extends JPanel {
 	private List<Piece> whiteFallenPieces = new ArrayList<>();
 	private List<Piece> blackFallenPieces = new ArrayList<>();
 
+    private ShowMoveOption moveOption;
+    private List<Square> highlightedSquares = new ArrayList<>();
+
 	public void setRewind(boolean enableRewind) {
 		this.rewindSelectedPanel = enableRewind;
 	}
@@ -79,6 +83,8 @@ public class ChessPanel extends JPanel {
 		detector = new OpeningDetection();
 
 		openingMap = detector.loadOpenings("/Openings/eco_openings.html");
+
+        moveOption = new ShowMoveOption(engine);
 
 		//Um Objekte individuell anordnen zu können
 		setLayout(null);
@@ -126,6 +132,7 @@ public class ChessPanel extends JPanel {
 				if (selectedSquare == null) {
 					if (engine.getPiece(clickedSquare) != Piece.NONE) {
 						selectedSquare = clickedSquare;
+                        highlightedSquares = moveOption.getLegalTargetSquares(selectedSquare);
 						repaint();
 					}
 				} else {
@@ -169,6 +176,7 @@ public class ChessPanel extends JPanel {
 						logger.debug("Illegal Move: " + move);
 					}
 					selectedSquare = null;
+                    highlightedSquares.clear();
 					//Ansicht akutalisieren
 					repaint();
 				}
@@ -314,41 +322,43 @@ public class ChessPanel extends JPanel {
 		g2.drawString(openingText, openingRectX + (openingRectWidth - textWidth) / 2, openingRectY + 25);
 
 		//Draw chess board
-		for (int rank = 0; rank < 8; rank++) {
-			for (int file = 0; file < 8; file++) {
-				if ((rank + file) % 2 == 0) {
-					g.setColor(Color.lightGray);
-				} else {
-					g.setColor(Color.white);
-				}
-				g.fillRect(file * squareSize, (7 - rank) * squareSize, squareSize, squareSize);
-			}
-		}
+        for (int rank = 0; rank < 8; rank++) {
+            for (int file = 0; file < 8; file++) {
+                int drawRank = color ? 7 - rank : rank;
+                int drawFile = color ? file : 7 - file;
 
+                if ((rank + file) % 2 == 0) {
+                    g.setColor(Color.lightGray);
+                } else {
+                    g.setColor(Color.white);
+                }
+                g.fillRect(drawFile * squareSize, drawRank * squareSize, squareSize, squareSize);
+            }
+        }
+
+        //Highlight-Ziele anzeigen
+        for (Square sq : highlightedSquares) {
+            int file = color ? sq.getFile().ordinal() : 7 - sq.getFile().ordinal();
+            int rank = color ? 7 - sq.getRank().ordinal() : sq.getRank().ordinal();
+            g.setColor(new Color(100, 180, 255, 128));
+            g.fillRect(file * squareSize, rank * squareSize, squareSize, squareSize);
+        }
 		//Draw pieces
-		for (int rank = 0; rank < 8; rank++) {
-			for (int file = 0; file < 8; file++) {
-				int drawRank = color ? 7 - rank : rank;
-				int drawFile = color ? file : 7 - file;
+        for (int rank = 0; rank < 8; rank++) {
+            for (int file = 0; file < 8; file++) {
+                int drawRank = color ? 7 - rank : rank;
+                int drawFile = color ? file : 7 - file;
 
-				//Brettfeld
-				if ((rank + file) % 2 == 0) {
-					g.setColor(Color.lightGray);
-				} else {
-					g.setColor(Color.white);
-				}
-				g.fillRect(drawFile * squareSize, drawRank * squareSize, squareSize, squareSize);
-
-				Square sq = squareFromCoords(rank, file);
-				Piece piece = engine.getBoard().getPiece(sq);
-				if (piece != Piece.NONE) {
-					Image img = PieceImageLoader.getImage(piece);
-					if (img != null) {
-						g.drawImage(img, drawFile * squareSize, drawRank * squareSize, squareSize, squareSize, this);
-					}
-				}
-			}
-		}
+                Square sq = squareFromCoords(rank, file);
+                Piece piece = engine.getBoard().getPiece(sq);
+                if (piece != Piece.NONE) {
+                    Image img = PieceImageLoader.getImage(piece);
+                    if (img != null) {
+                        g.drawImage(img, drawFile * squareSize, drawRank * squareSize, squareSize, squareSize, this);
+                    }
+                }
+            }
+        }
 
 		//Specs fallen pieces
 		List<Piece> bottomPieces = color ? whiteFallenPieces : blackFallenPieces;

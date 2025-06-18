@@ -1,10 +1,11 @@
 package de.thm.informatik.chess.domain;
 
+import java.util.List;
+
 import com.github.bhlangonijr.chesslib.Board;
 import com.github.bhlangonijr.chesslib.Piece;
-import com.github.bhlangonijr.chesslib.move.Move;
 import com.github.bhlangonijr.chesslib.Square;
-import java.util.List;
+import com.github.bhlangonijr.chesslib.move.Move;
 
 public class ChessEngine {
 
