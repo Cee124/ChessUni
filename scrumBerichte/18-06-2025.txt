@@ -10,11 +10,11 @@ Luis:
 Chris:
 
 - Was habe ich letzte Woche gemacht?
--->
+-->Anzeige der möglichen Zugoptionen
 - Was plane ich diese Woche zu tun?
--->
+-->Schach-und Matt-Erkennung und Anzeige zuschaltbar machen. Eventuell lokales Spielen ermöglichen
 - Auf welche (größeren) Probleme bin ich gestoßen?
--->
+-->Chesslib für Anzeige verwenden und wie ich diese Anzeige in unserem ChessPanel richtig integriere. 
 
 Ruwen:
 
