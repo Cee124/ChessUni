@@ -1,11 +1,11 @@
 Luis:
 
 - Was habe ich letzte Woche gemacht?
--->
+--> Eröffnungserkennung, Input Window, Ansicht für Geschlagene Figuren, "God" Klasse teilweise aufgelöst
 - Was plane ich diese Woche zu tun?
--->
+--> Chess Panel weiter auflösen, JUnit Tests, PMD Check
 - Auf welche (größeren) Probleme bin ich gestoßen?
--->
+--> Rekursive Aufrufe von Konstruktoren, Uhrenlogik war falsch nachdem Farbauswahl implementiert wurde
 
 Chris:
 
