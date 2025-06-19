@@ -9,8 +9,11 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+<<<<<<< HEAD
 import java.io.IOException;
 import java.util.ArrayList;
+=======
+>>>>>>> feature_Chesslib
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +32,7 @@ import com.github.bhlangonijr.chesslib.Square;
 import com.github.bhlangonijr.chesslib.move.Move;
 
 import de.thm.informatik.chess.domain.ChessEngine;
+<<<<<<< HEAD
 import de.thm.informatik.chess.domain.ClockHandler;
 import de.thm.informatik.chess.domain.GameState;
 import de.thm.informatik.chess.domain.OpeningDetection;
@@ -43,6 +47,25 @@ public class ChessPanel extends JPanel {
 	private Square selectedSquare = null;
 	private final int squareSize = 95;
 	private static final List<Move> moveHistory = new LinkedList<>();
+=======
+import de.thm.informatik.chess.util.PieceImageLoader;
+
+public class ChessPanel extends JPanel {
+
+    private Timer countDownTimer;
+    private long remaining;
+    private boolean running;
+    private ChessEngine engine = new ChessEngine();
+    private Square selectedSquare = null;
+    private final int squareSize = 95;
+    public ChessPanel() {
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int file = e.getX() / squareSize;
+                int rank = 7 - (e.getY() / squareSize);
+                Square clickedSquare = squareFromCoords(rank, file);
+>>>>>>> feature_Chesslib
 
 	private final JButton forwardButton;
 	private final JButton rewindButton;
@@ -53,8 +76,16 @@ public class ChessPanel extends JPanel {
 
 	private int currentMoveIndex;
 
+<<<<<<< HEAD
 	private final OpeningDetection detector;
 	private final Map<String, String> openingMap;
+=======
+    
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+>>>>>>> feature_Chesslib
 
 	private String lastDetectedOpening = "Keine Eröffnung erkannt";
 
