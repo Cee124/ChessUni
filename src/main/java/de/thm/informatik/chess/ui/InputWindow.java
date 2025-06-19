@@ -13,6 +13,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import de.thm.informatik.chess.domain.ClockHandler;
+import de.thm.informatik.chess.util.IconLoader;
 
 public class InputWindow extends JPanel {
 
