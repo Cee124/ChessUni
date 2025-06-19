@@ -28,13 +28,14 @@ import com.github.bhlangonijr.chesslib.Side;
 import static com.github.bhlangonijr.chesslib.Side.WHITE;
 import com.github.bhlangonijr.chesslib.Square;
 import com.github.bhlangonijr.chesslib.move.Move;
-import de.thm.informatik.chess.util.*;
+
 import de.thm.informatik.chess.domain.ChessEngine;
 import de.thm.informatik.chess.domain.ClockHandler;
 import de.thm.informatik.chess.domain.GameState;
 import de.thm.informatik.chess.domain.OpeningDetection;
 import de.thm.informatik.chess.domain.ShowMoveOption;
 import de.thm.informatik.chess.domain.UciParser;
+import de.thm.informatik.chess.util.PieceImageLoader;
 
 public class ChessPanel extends JPanel {
 
@@ -226,7 +227,6 @@ public class ChessPanel extends JPanel {
 			for (int i = 0; i < currentMoveIndex; i++) {
 				engine.makeMove(moveHistory.get(i));
 			}
-<<<<<<< HEAD
 
 			//Erneute Prüfung welcher Spieler am Zug ist wenn rewinded wurde, damit korrekte Uhr startet
 			handler.pauseClocks();
@@ -245,9 +245,6 @@ public class ChessPanel extends JPanel {
 				}
 			}
 			//Ansicht aktualisieren
-=======
-			// Ansicht aktualisieren
->>>>>>> feature_checkmate-detection
 			repaint();
 		}
 	}
