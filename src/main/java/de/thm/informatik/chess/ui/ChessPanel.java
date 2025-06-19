@@ -70,9 +70,14 @@ public class ChessPanel extends JPanel {
 
     private ShowMoveOption moveOption;
     private List<Square> highlightedSquares = new ArrayList<>();
+	private boolean showMoveOptionsSelectedPanel = false;
 
 	public void setRewind(boolean enableRewind) {
 		this.rewindSelectedPanel = enableRewind;
+	}
+
+	public void setShowMoveOptions(boolean enableShowMoveOptions) {
+		this.showMoveOptionsSelectedPanel = enableShowMoveOptions;
 	}
 
 	public ChessPanel(ClockHandler handler) throws IOException {
@@ -183,6 +188,7 @@ public class ChessPanel extends JPanel {
 			}
 		});
 	}
+	
 
 	//Methode um Liste gemachter Züge zurückzugeben
 	public static List<Move> getMoveHistory() {
@@ -337,12 +343,14 @@ public class ChessPanel extends JPanel {
         }
 
         //Highlight-Ziele anzeigen
+		if(showMoveOptionsSelectedPanel) {
         for (Square sq : highlightedSquares) {
             int file = color ? sq.getFile().ordinal() : 7 - sq.getFile().ordinal();
             int rank = color ? 7 - sq.getRank().ordinal() : sq.getRank().ordinal();
             g.setColor(new Color(100, 180, 255, 128));
             g.fillRect(file * squareSize, rank * squareSize, squareSize, squareSize);
         }
+		}
 		//Draw pieces
         for (int rank = 0; rank < 8; rank++) {
             for (int file = 0; file < 8; file++) {
