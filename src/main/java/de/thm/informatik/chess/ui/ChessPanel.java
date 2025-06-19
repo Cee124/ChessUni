@@ -44,6 +44,7 @@ public class ChessPanel extends JPanel {
 	private ChessEngine engine = new ChessEngine();
 	private ClockHandler handlerC;
 	private SkipHandler handlerS;
+	private DrawBoard drawB;
 
 	private Square selectedSquare = null;
 	private final int squareSize = 95;
@@ -75,11 +76,6 @@ public class ChessPanel extends JPanel {
 
 	private ShowMoveOption moveOption;
 	private List<Square> highlightedSquares = new ArrayList<>();
-	private boolean showMoveOptionsSelectedPanel = false;
-
-	public void setShowMoveOptions(boolean enableShowMoveOptions) {
-		this.showMoveOptionsSelectedPanel = enableShowMoveOptions;
-	}
 
 	public void setRewind(boolean enableRewind) {
 		this.rewindSelectedPanel = enableRewind;
@@ -93,6 +89,10 @@ public class ChessPanel extends JPanel {
 		this.currentMoveIndex = index;
 	}
 
+	public DrawBoard getDrawBoard(){
+		return drawB;
+	}
+
 	public ChessPanel(ClockHandler handlerC) throws IOException {
 		this.handlerC = handlerC;
 		handlerC.setPanel(this);
@@ -102,6 +102,8 @@ public class ChessPanel extends JPanel {
 		handlerS = new SkipHandler(engine);
 		handlerS.setPanel(this);
 		handlerS.setHandler(handlerC);
+
+		this.drawB = new DrawBoard(engine, squareSize, color);
 
 		detector = new OpeningDetection();
 
@@ -147,7 +149,7 @@ public class ChessPanel extends JPanel {
 			public void mouseClicked(MouseEvent e) {
 				int file = color ? e.getX() / squareSize : 7 - (e.getX() / squareSize);
 				int rank = color ? 7 - (e.getY() / squareSize) : e.getY() / squareSize;
-				Square clickedSquare = squareFromCoords(rank, file);
+				Square clickedSquare = drawB.squareFromCoords(rank, file);
 
 				Piece targetPiece = engine.getPiece(clickedSquare);
 				boolean isCaptured = targetPiece != Piece.NONE;
@@ -258,6 +260,8 @@ public class ChessPanel extends JPanel {
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 
+		drawB.drawBoard(g, highlightedSquares);
+
 		// Rechte Bildschirmhälfte dunkelgrün färben
 		Graphics2D g2 = (Graphics2D) g.create();
 		Color colorRightSide = new Color(180, 180, 180);
@@ -323,47 +327,6 @@ public class ChessPanel extends JPanel {
 		int textWidth = fm.stringWidth(openingText);
 		// Opening Text schreiben
 		g2.drawString(openingText, openingRectX + (openingRectWidth - textWidth) / 2, openingRectY + 25);
-
-		// Draw chess board
-		for (int rank = 0; rank < 8; rank++) {
-			for (int file = 0; file < 8; file++) {
-				int drawRank = color ? 7 - rank : rank;
-				int drawFile = color ? file : 7 - file;
-
-				if ((rank + file) % 2 == 0) {
-					g.setColor(Color.lightGray);
-				} else {
-					g.setColor(Color.white);
-				}
-				g.fillRect(drawFile * squareSize, drawRank * squareSize, squareSize, squareSize);
-			}
-		}
-
-		// Highlight-Ziele anzeigen
-		if (showMoveOptionsSelectedPanel) {
-			for (Square sq : highlightedSquares) {
-				int file = color ? sq.getFile().ordinal() : 7 - sq.getFile().ordinal();
-				int rank = color ? 7 - sq.getRank().ordinal() : sq.getRank().ordinal();
-				g.setColor(new Color(100, 180, 255, 128));
-				g.fillRect(file * squareSize, rank * squareSize, squareSize, squareSize);
-			}
-		}
-		// Draw pieces
-		for (int rank = 0; rank < 8; rank++) {
-			for (int file = 0; file < 8; file++) {
-				int drawRank = color ? 7 - rank : rank;
-				int drawFile = color ? file : 7 - file;
-
-				Square sq = squareFromCoords(rank, file);
-				Piece piece = engine.getBoard().getPiece(sq);
-				if (piece != Piece.NONE) {
-					Image img = PieceImageLoader.getImage(piece);
-					if (img != null) {
-						g.drawImage(img, drawFile * squareSize, drawRank * squareSize, squareSize, squareSize, this);
-					}
-				}
-			}
-		}
 
 		// Specs fallen pieces
 		List<Piece> bottomPieces = color ? whiteFallenPieces : blackFallenPieces;
@@ -527,13 +490,6 @@ public class ChessPanel extends JPanel {
 			sb.append(move.toString()); // Check if ok
 		}
 		return sb.toString();
-	}
-
-	private Square squareFromCoords(int rank, int file) {
-		char fileChar = (char) ('A' + file);
-		char rankChar = (char) ('1' + rank);
-		String squareName = "" + fileChar + rankChar;
-		return Square.valueOf(squareName);
 	}
 
 	public void quicksave() {

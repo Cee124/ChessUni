@@ -36,10 +36,12 @@ public class InputWindow extends JPanel {
 
     private ChessPanel panel;
     private ClockHandler handler;
+    private DrawBoard drawB;
 
     public InputWindow() throws IOException {
         this.handler = new ClockHandler();
         this.panel = new ChessPanel(handler);
+        this.drawB = panel.getDrawBoard();
 
         setLayout(null);
 
@@ -95,10 +97,10 @@ public class InputWindow extends JPanel {
             moveOptionsSelected = !moveOptionsSelected;
             if (moveOptionsSelected) {
                 toggleMoveOptionsBox.setIcon(IconLoader.TICKED_ICON);
-                panel.setShowMoveOptions(true);
+                drawB.setShowMoveOptions(true);
             } else {
                 toggleMoveOptionsBox.setIcon(IconLoader.EMPTY_ICON);
-                panel.setShowMoveOptions(false);
+                drawB.setShowMoveOptions(false);
             }
 
         });
