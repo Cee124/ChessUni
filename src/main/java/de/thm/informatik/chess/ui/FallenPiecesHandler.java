@@ -85,4 +85,12 @@ public class FallenPiecesHandler {
     public void setColor(boolean color){
         this.color = color;
     }
+
+	public void setWhiteFallenPieces(List<Piece> whiteFallenPieces) {
+        this.whiteFallenPieces = whiteFallenPieces;
+    }
+
+    public void setBlackFallenPieces(List<Piece> blackFallenPieces) {
+        this.blackFallenPieces = blackFallenPieces;
+    }
 }

@@ -438,7 +438,7 @@ public class ChessPanel extends JPanel {
 
 	public void quicksave() {
 		quickSaveState = new GameState(engine.getBoard().clone(), currentMoveIndex, handlerC.getWhiteRemaining(),
-				handlerC.getBlackRemaining(), engine.getBoard().getSideToMove());
+				handlerC.getBlackRemaining(), engine.getBoard().getSideToMove(), whiteFallenPieces, blackFallenPieces);
 		logger.info("Quicksave durchgefuehrt.");
 	}
 
@@ -463,6 +463,13 @@ public class ChessPanel extends JPanel {
 		//Uhren zurücksetzen
 		handlerC.setWhiteRemaining(quickSaveState.getWhiteTime());
 		handlerC.setBlackRemaining(quickSaveState.getBlackTime());
+
+		//gespeicherte FallenPieces aus GameState holen
+		whiteFallenPieces = new ArrayList<>(quickSaveState.getWhiteFallenPieces());
+    	blackFallenPieces = new ArrayList<>(quickSaveState.getBlackFallenPieces());
+		//FallenPiecesHandler aktualisieren
+    	drawFP.setWhiteFallenPieces(whiteFallenPieces);
+    	drawFP.setBlackFallenPieces(blackFallenPieces);
 		
 		handlerC.startClocks();
 		repaint();
