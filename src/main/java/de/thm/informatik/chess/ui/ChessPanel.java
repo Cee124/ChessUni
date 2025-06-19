@@ -36,6 +36,7 @@ import de.thm.informatik.chess.domain.OpeningDetection;
 import de.thm.informatik.chess.domain.ShowMoveOption;
 import de.thm.informatik.chess.domain.SkipHandler;
 import de.thm.informatik.chess.domain.UciParser;
+import de.thm.informatik.chess.util.IconLoader;
 import de.thm.informatik.chess.util.PieceImageLoader;
 
 public class ChessPanel extends JPanel {
