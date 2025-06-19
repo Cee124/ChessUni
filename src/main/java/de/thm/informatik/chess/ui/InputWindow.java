@@ -26,12 +26,16 @@ public class InputWindow extends JPanel {
     private final JLabel rewindText;
     private final JButton rewindBox;
     private boolean rewindSelected = false;
+    
+    private final JButton setupButton;
+    private boolean setupSelected = false;
 
     private final JButton enter;
 
     private int timeType;
 
     private ChessPanel panel;
+    private SetupPositionPanel setupPanel;
     private ClockHandler handler;
 
     public InputWindow() throws IOException{
@@ -47,6 +51,7 @@ public class InputWindow extends JPanel {
         blackKing = new JButton(IconLoader.BLACKKING_ICONX);
         rewindText = new JLabel("Rewind? ");
         rewindBox = new JButton(IconLoader.EMPTY_ICON);
+        setupButton = new JButton("Setup Custom Position");
         enter = new JButton("Enter");
 
         add(modus3);
@@ -57,6 +62,7 @@ public class InputWindow extends JPanel {
         add(rewindText);
         add(rewindBox);
         add(enter);
+        add(setupButton);
 
         //Default value für Timer
         timeType = 5;
@@ -83,6 +89,24 @@ public class InputWindow extends JPanel {
                 panel.setRewind(false);
             }
         });
+        
+        setupButton.addActionListener(e -> {
+            setupSelected = !setupSelected;
+
+            setupPanel = new SetupPositionPanel(null);
+
+            JFrame framePanel = new JFrame("Custom Position");
+            framePanel.add(setupPanel);
+            
+            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+            framePanel.setSize(screenSize);
+            framePanel.setLocation(0, 0);
+
+            framePanel.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            framePanel.setVisible(true);
+        });
+
+
         
         enter.addActionListener(e -> {
             // Schließen des Input-Fensters
@@ -122,6 +146,8 @@ public class InputWindow extends JPanel {
 
         whiteKing.setBounds(modus10X + (buttonWidth - 70), 120, 60, 60);
         blackKing.setBounds(modus3X + (buttonWidth - 70), 120, 60, 60);
+        
+        setupButton.setBounds(centerX - 50, 5, buttonWidth + 100, buttonHeight);
 
         enter.setBounds(0, panelHeight - 40, panelWidth, 40);
         rewindText.setBounds(centerX + 15, 115, 100, 20);
