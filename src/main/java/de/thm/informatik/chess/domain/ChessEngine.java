@@ -12,7 +12,11 @@ public class ChessEngine {
     private Board board;
 
     public ChessEngine() {
-        board = new Board();
+        this.board = new Board();
+    }
+    
+    public ChessEngine(Board customBoard) {
+    	this.board = customBoard;
     }
 
     public Board getBoard() {

@@ -22,6 +22,7 @@ import javax.swing.JPanel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.github.bhlangonijr.chesslib.Board;
 import com.github.bhlangonijr.chesslib.Piece;
 import com.github.bhlangonijr.chesslib.Side;
 import static com.github.bhlangonijr.chesslib.Side.WHITE;
@@ -37,8 +38,9 @@ import de.thm.informatik.chess.domain.UciParser;
 
 public class ChessPanel extends JPanel {
 
-	private ChessEngine engine = new ChessEngine();
+	private ChessEngine engine;
 	private ClockHandler handler;
+	private Board board;
 
 	private Square selectedSquare = null;
 	private final int squareSize = 95;
@@ -76,6 +78,7 @@ public class ChessPanel extends JPanel {
 	}
 
 	public ChessPanel(ClockHandler handler) throws IOException {
+		this.engine = new ChessEngine();
 		this.handler = handler;
 		handler.setPanel(this);
 		handler.setEngine(engine);
@@ -90,12 +93,12 @@ public class ChessPanel extends JPanel {
 		setLayout(null);
 
 		//Icons für Buttons holen
-		forwardButton = new JButton(IconLoader.FORWARD_ICON);
-		rewindButton = new JButton(IconLoader.REWIND_ICON);
-		startButton = new JButton(IconLoader.START_ICON);
-		pauseButton = new JButton(IconLoader.PAUSE_ICON);
-		quicksaveButton = new JButton(IconLoader.QUICKSAVE_ICON);
-		quickloadButton = new JButton(IconLoader.QUICKLOAD_ICON);
+		forwardButton = new JButton(PieceIconLoader.FORWARD_ICON);
+		rewindButton = new JButton(PieceIconLoader.REWIND_ICON);
+		startButton = new JButton(PieceIconLoader.START_ICON);
+		pauseButton = new JButton(PieceIconLoader.PAUSE_ICON);
+		quicksaveButton = new JButton(PieceIconLoader.QUICKSAVE_ICON);
+		quickloadButton = new JButton(PieceIconLoader.QUICKLOAD_ICON);
 
 		//Buttons dem Panel hinzufügen
 		add(forwardButton);
@@ -565,5 +568,26 @@ public class ChessPanel extends JPanel {
 
 		logger.info("Quickload durchgefuehrt.");
 	}
+
+	public void setCustomBoard(Board customBoard) {
+		engine.setBoard(customBoard);
+	    repaint();
+		
+	}
+
+    public void setBoard(Board board) {
+        this.board = board;
+    }
+
+    public Board getBoard() {
+        return board;
+    }
+    
+	public ChessEngine getEngine() {
+		
+		return engine;
+	}
+
+
 
 }

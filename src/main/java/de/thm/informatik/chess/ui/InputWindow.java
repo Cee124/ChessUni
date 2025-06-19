@@ -12,6 +12,11 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import com.github.bhlangonijr.chesslib.Board;
+import com.github.bhlangonijr.chesslib.Piece;
+import com.github.bhlangonijr.chesslib.Square;
+
+import de.thm.informatik.chess.domain.ChessEngine;
 import de.thm.informatik.chess.domain.ClockHandler;
 
 public class InputWindow extends JPanel {
@@ -37,6 +42,7 @@ public class InputWindow extends JPanel {
     private ChessPanel panel;
     private SetupPositionPanel setupPanel;
     private ClockHandler handler;
+    private Board customBoard;
 
     public InputWindow() throws IOException{
         this.handler = new ClockHandler();
@@ -47,10 +53,10 @@ public class InputWindow extends JPanel {
         modus3 = new JButton("3 Min");
         modus5 = new JButton("5 Min");
         modus10 = new JButton("10 Min");
-        whiteKing = new JButton(IconLoader.WHITEKING_ICONX);
-        blackKing = new JButton(IconLoader.BLACKKING_ICONX);
+        whiteKing = new JButton(PieceIconLoader.WHITEKING_ICONX);
+        blackKing = new JButton(PieceIconLoader.BLACKKING_ICONX);
         rewindText = new JLabel("Rewind? ");
-        rewindBox = new JButton(IconLoader.EMPTY_ICON);
+        rewindBox = new JButton(PieceIconLoader.EMPTY_ICON);
         setupButton = new JButton("Setup Custom Position");
         enter = new JButton("Enter");
 
@@ -82,33 +88,49 @@ public class InputWindow extends JPanel {
         rewindBox.addActionListener(e -> {
             rewindSelected = !rewindSelected;
             if(rewindSelected){
-                rewindBox.setIcon(IconLoader.TICKED_ICON);
+                rewindBox.setIcon(PieceIconLoader.TICKED_ICON);
                 panel.setRewind(true);
             }else{
-                rewindBox.setIcon(IconLoader.EMPTY_ICON);
+                rewindBox.setIcon(PieceIconLoader.EMPTY_ICON);
                 panel.setRewind(false);
             }
         });
         
         setupButton.addActionListener(e -> {
-            setupSelected = !setupSelected;
-
-            setupPanel = new SetupPositionPanel(null);
-
-            JFrame framePanel = new JFrame("Custom Position");
-            framePanel.add(setupPanel);
+            setupSelected = true;
             
+            JFrame framePanel = new JFrame("Custom Position");
+            
+            SetupPositionPanel setupPanel = new SetupPositionPanel(framePanel, customBoard -> {
+                this.customBoard = customBoard;
+                panel.setCustomBoard(customBoard);
+                panel.getEngine().setBoard(customBoard);
+                
+            });
+
+            
+            framePanel.add(setupPanel);
+
             Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
             framePanel.setSize(screenSize);
             framePanel.setLocation(0, 0);
 
             framePanel.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             framePanel.setVisible(true);
+            
+            
         });
+
 
 
         
         enter.addActionListener(e -> {
+        	
+        	if (setupSelected && customBoard != null) {
+                panel.setCustomBoard(customBoard);
+                
+            }
+        	
             // Schließen des Input-Fensters
             JFrame topFrame = (JFrame) getTopLevelAncestor();
             topFrame.dispose();
@@ -116,7 +138,7 @@ public class InputWindow extends JPanel {
             JFrame framePanel = new JFrame("Chess");
             framePanel.add(panel);
 
-            // Bildschirmgröße holen und setzen
+            //Bildschirmgröße holen und setzen
             Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
             framePanel.setSize(screenSize);
             framePanel.setLocation(0, 0);
