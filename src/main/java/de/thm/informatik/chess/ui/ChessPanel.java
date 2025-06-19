@@ -62,7 +62,7 @@ public class ChessPanel extends JPanel {
 
 	private String lastDetectedOpening = "Keine Eröffnung erkannt";
 
-	private boolean rewindSelectedPanel = false;
+	public boolean rewindSelectedPanel = false;
 	public boolean color = true;
 
 	private GameState quickSaveState = null;

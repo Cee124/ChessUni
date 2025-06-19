@@ -24,6 +24,9 @@ public class SkipHandler {
     }
 
     public void rewindMove() {
+        if(!panel.rewindSelectedPanel){
+            return;
+        }
         List<Move> moveHistory = ChessPanel.getMoveHistory();
         int currentMoveIndex = panel.getCurrentMoveIndex();
         
