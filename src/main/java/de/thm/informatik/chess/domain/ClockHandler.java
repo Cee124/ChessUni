@@ -169,6 +169,25 @@ public class ClockHandler {
         }
     }
 
+    public void updateClocks(){
+        pauseClocks();
+        Side currentSide = engine.getBoard().getSideToMove();
+        if (panel.color) {
+            if (currentSide == Side.WHITE) {
+                startWhiteClock();
+            } else {
+                startBlackClock();
+            }
+        } else {
+            if (currentSide == Side.WHITE) {
+                startBlackClock();
+            } else {
+                startWhiteClock();
+            }
+        }
+            
+    }
+
     public long getWhiteRemaining() {
         return whiteRemaining;
     }

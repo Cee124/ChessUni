@@ -33,12 +33,14 @@ import de.thm.informatik.chess.domain.ClockHandler;
 import de.thm.informatik.chess.domain.GameState;
 import de.thm.informatik.chess.domain.OpeningDetection;
 import de.thm.informatik.chess.domain.ShowMoveOption;
+import de.thm.informatik.chess.domain.SkipHandler;
 import de.thm.informatik.chess.domain.UciParser;
 
 public class ChessPanel extends JPanel {
 
 	private ChessEngine engine = new ChessEngine();
-	private ClockHandler handler;
+	private ClockHandler handlerC;
+	private SkipHandler handlerS;
 
 	private Square selectedSquare = null;
 	private final int squareSize = 95;
@@ -59,7 +61,7 @@ public class ChessPanel extends JPanel {
 	private String lastDetectedOpening = "Keine Eröffnung erkannt";
 
 	private boolean rewindSelectedPanel = false;
-	private boolean color = true;
+	public boolean color = true;
 
 	private GameState quickSaveState = null;
 
@@ -75,11 +77,24 @@ public class ChessPanel extends JPanel {
 		this.rewindSelectedPanel = enableRewind;
 	}
 
-	public ChessPanel(ClockHandler handler) throws IOException {
-		this.handler = handler;
-		handler.setPanel(this);
-		handler.setEngine(engine);
-		handler.addClock(5);
+	public int getCurrentMoveIndex(){
+		return currentMoveIndex;
+	}
+
+	public void setCurrentMoveIndex(int index){
+		this.currentMoveIndex = index;
+	}
+
+	public ChessPanel(ClockHandler handlerC) throws IOException {
+		this.handlerC = handlerC;
+		handlerC.setPanel(this);
+		handlerC.setEngine(engine);
+		handlerC.addClock(5);
+
+		handlerS = new SkipHandler(engine);
+		handlerS.setPanel(this);
+		handlerS.setHandler(handlerC);
+
 		detector = new OpeningDetection();
 
 		openingMap = detector.loadOpenings("/Openings/eco_openings.html");
@@ -106,10 +121,10 @@ public class ChessPanel extends JPanel {
 		add(quickloadButton);
 
 		//Button Logik
-		forwardButton.addActionListener(e -> fastForwardMove());
-		rewindButton.addActionListener(e -> rewindMove());
-		startButton.addActionListener(e -> handler.startClocks());
-		pauseButton.addActionListener(e -> handler.pauseClocks());
+		forwardButton.addActionListener(e -> handlerS.fastForwardMove());
+		rewindButton.addActionListener(e -> handlerS.rewindMove());
+		startButton.addActionListener(e -> handlerC.startClocks());
+		pauseButton.addActionListener(e -> handlerC.pauseClocks());
 
 		quicksaveButton.addActionListener(e -> {
 			quicksave();
@@ -151,22 +166,24 @@ public class ChessPanel extends JPanel {
 						}
 						//Zug wird ausgeführt
 						engine.makeMove(move);
-						moveHistory.subList(currentMoveIndex, moveHistory.size()).clear();
+						if (currentMoveIndex != moveHistory.size()) {
+        					moveHistory.subList(currentMoveIndex, moveHistory.size()).clear();
+    					}
 						moveHistory.add(move);
 						currentMoveIndex = moveHistory.size();
 
 						Side nextSide = engine.getBoard().getSideToMove();
 						if (nextSide == WHITE) {
 							if (color) {
-								handler.startWhiteClock();
+								handlerC.startWhiteClock();
 							} else {
-								handler.startBlackClock();
+								handlerC.startBlackClock();
 							}
 						} else {
 							if (color) {
-								handler.startBlackClock();
+								handlerC.startBlackClock();
 							} else {
-								handler.startWhiteClock();
+								handlerC.startWhiteClock();
 							}
 						}
 						//Aktualisierung der Ansicht
@@ -187,60 +204,6 @@ public class ChessPanel extends JPanel {
 	//Methode um Liste gemachter Züge zurückzugeben
 	public static List<Move> getMoveHistory() {
 		return moveHistory;
-	}
-
-	//Methode für rewind-Button Logik
-	private void rewindMove() {
-		if (!rewindSelectedPanel) {
-			return;
-		}
-		//Wenn Züge gemacht wurden
-		if (currentMoveIndex > 0) {
-			//index auf moveHistory.size() - 1 setzen
-			currentMoveIndex--;
-			//Schachgame zurücksetzen
-			engine.reset();
-			//Alle Züge machen die in der moveHistory gespeichert sind bis zu
-			//index(moveHistory.size() - 1)
-			for (int i = 0; i < currentMoveIndex; i++) {
-				engine.makeMove(moveHistory.get(i));
-			}
-
-			//Erneute Prüfung welcher Spieler am Zug ist wenn rewinded wurde, damit korrekte Uhr startet
-			handler.pauseClocks();
-			Side currentSide = engine.getBoard().getSideToMove();
-			if (color) {
-				if (currentSide == Side.WHITE) {
-					handler.startWhiteClock();
-				} else {
-					handler.startBlackClock();
-				}
-			} else {
-				if (currentSide == Side.WHITE) {
-					handler.startBlackClock();
-				} else {
-					handler.startWhiteClock();
-				}
-			}
-			//Ansicht aktualisieren
-			repaint();
-		}
-	}
-
-	//Methode für forward-Button Logik
-	private void fastForwardMove() {
-		//Wenn index größer/gleich zuganzahl dann wird nichts gemacht
-		if (currentMoveIndex >= moveHistory.size()) {
-			return;
-		}
-		//Zug aus der Zugliste holen
-		Move forwardMove = moveHistory.get(currentMoveIndex);
-		//Rückgängig gemachten Zug ausführen
-		engine.makeMove(forwardMove);
-		//Index wieder hochzählen
-		currentMoveIndex++;
-		//Ansicht aktualisieren
-		repaint();
 	}
 
 	@Override
@@ -441,18 +404,18 @@ public class ChessPanel extends JPanel {
 
 		//White clock
 		//Wenn weiße Uhr läuft dann rote Darstellung sonst schwarz
-		g.setColor(handler.isWhiteRunning() ? Color.RED : Color.BLACK);
+		g.setColor(handlerC.isWhiteRunning() ? Color.RED : Color.BLACK);
 		//Da in ms dargestellt muss man durch 1000 teilen für Sekunden
-		long whiteTimeMs = handler.getWhiteRemaining();
+		long whiteTimeMs = handlerC.getWhiteRemaining();
 		String whiteTime = formatTime(whiteTimeMs);
 		//Weße Uhr zeichnen
 		g.drawString(whiteTime, clockX, whiteClockY);
 
 		//Black clock
 		//Wenn schwarze Uhr läuft dann rote Darstellung sonst schwarz
-		g.setColor(handler.isBlackRunning() ? Color.RED : Color.BLACK);
+		g.setColor(handlerC.isBlackRunning() ? Color.RED : Color.BLACK);
 		//Da in ms dargestellt muss man durch 1000 teilen für Sekunden
-		long blackTimeMs = handler.getBlackRemaining();
+		long blackTimeMs = handlerC.getBlackRemaining();
 		String blackTime = formatTime(blackTimeMs);
 		//Schwarze Uhr zeichnen
 		g.drawString(blackTime, clockX, blackClockY);
@@ -528,7 +491,7 @@ public class ChessPanel extends JPanel {
 	//Methode um Spielfarbe festzulegen
 	public void setColor(boolean isWhite) {
 		this.color = isWhite;
-		handler.setColor(isWhite);
+		handlerC.setColor(isWhite);
 		repaint();
 	}
 
@@ -549,8 +512,8 @@ public class ChessPanel extends JPanel {
 	}
 
 	public void quicksave() {
-		quickSaveState = new GameState(engine.getBoard().clone(), currentMoveIndex, handler.getWhiteRemaining(),
-				handler.getBlackRemaining(), engine.getBoard().getSideToMove());
+		quickSaveState = new GameState(engine.getBoard().clone(), currentMoveIndex, handlerC.getWhiteRemaining(),
+				handlerC.getBlackRemaining(), engine.getBoard().getSideToMove());
 		logger.info("Quicksave durchgefuehrt.");
 	}
 
@@ -573,10 +536,10 @@ public class ChessPanel extends JPanel {
 		engine.getBoard().setSideToMove(quickSaveState.getSideToMove());
 
 		//Uhren zurücksetzen
-		handler.setWhiteRemaining(quickSaveState.getWhiteTime());
-		handler.setBlackRemaining(quickSaveState.getBlackTime());
+		handlerC.setWhiteRemaining(quickSaveState.getWhiteTime());
+		handlerC.setBlackRemaining(quickSaveState.getBlackTime());
 		
-		handler.startClocks();
+		handlerC.startClocks();
 
 		repaint();
 
