@@ -6,7 +6,6 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -37,7 +36,6 @@ import de.thm.informatik.chess.domain.ShowMoveOption;
 import de.thm.informatik.chess.domain.SkipHandler;
 import de.thm.informatik.chess.domain.UciParser;
 import de.thm.informatik.chess.util.IconLoader;
-import de.thm.informatik.chess.util.PieceImageLoader;
 
 public class ChessPanel extends JPanel {
 
@@ -45,6 +43,7 @@ public class ChessPanel extends JPanel {
 	private ClockHandler handlerC;
 	private SkipHandler handlerS;
 	private DrawBoard drawB;
+	private FallenPiecesHandler drawFP;
 
 	private Square selectedSquare = null;
 	private final int squareSize = 95;
@@ -104,6 +103,7 @@ public class ChessPanel extends JPanel {
 		handlerS.setHandler(handlerC);
 
 		this.drawB = new DrawBoard(engine, squareSize, color);
+		this.drawFP = new FallenPiecesHandler(whiteFallenPieces, blackFallenPieces, squareSize, color);
 
 		detector = new OpeningDetection();
 
@@ -261,6 +261,7 @@ public class ChessPanel extends JPanel {
 		super.paintComponent(g);
 
 		drawB.drawBoard(g, highlightedSquares);
+		drawFP.drawFallenPieces(g);
 
 		// Rechte Bildschirmhälfte dunkelgrün färben
 		Graphics2D g2 = (Graphics2D) g.create();
@@ -327,65 +328,6 @@ public class ChessPanel extends JPanel {
 		int textWidth = fm.stringWidth(openingText);
 		// Opening Text schreiben
 		g2.drawString(openingText, openingRectX + (openingRectWidth - textWidth) / 2, openingRectY + 25);
-
-		// Specs fallen pieces
-		List<Piece> bottomPieces = color ? whiteFallenPieces : blackFallenPieces;
-		List<Piece> topPieces = color ? blackFallenPieces : whiteFallenPieces;
-
-		// Draw fallen pieces white
-		int xPieceWhite = clockX;
-		int yPieceWhite = boardPixelSize - 100;
-		int countWhite = 0;
-		for (Piece p : bottomPieces) {
-			countWhite++;
-			Image imgP = PieceImageLoader.getImage(p);
-			if (imgP != null) {
-				g.drawImage(imgP, xPieceWhite, yPieceWhite, 20, 20, this);
-			}
-			if (countWhite % 6 == 0) {
-				yPieceWhite -= 20;
-			}
-			if (countWhite < 6 && countWhite != 7) {
-				xPieceWhite += 15;
-			} else if (countWhite > 6 && countWhite != 7 && countWhite < 12) {
-				xPieceWhite -= 15;
-			} else if (countWhite > 12 && countWhite != 13) {
-				xPieceWhite += 15;
-			}
-			if (countWhite == 7) {
-				xPieceWhite -= 15;
-			} else if (countWhite == 13) {
-				xPieceWhite += 15;
-			}
-
-		}
-
-		// Draw fallen pieces black
-		int xPieceBlack = clockX;
-		int yPieceBlack = 52;
-		int countBlack = 0;
-		for (Piece p : topPieces) {
-			countBlack++;
-			Image imgP = PieceImageLoader.getImage(p);
-			if (imgP != null) {
-				g.drawImage(imgP, xPieceBlack, yPieceBlack, 20, 20, this);
-			}
-			if (countBlack % 6 == 0) {
-				yPieceBlack += 20;
-			}
-			if (countBlack < 6 && countBlack != 7) {
-				xPieceBlack += 15;
-			} else if (countBlack > 6 && countBlack != 7 && countBlack < 12) {
-				xPieceBlack -= 15;
-			} else if (countBlack > 12 && countBlack != 13) {
-				xPieceBlack += 15;
-			}
-			if (countBlack == 7) {
-				xPieceBlack -= 15;
-			} else if (countBlack == 13) {
-				xPieceBlack += 15;
-			}
-		}
 
 		// Draw clocks
 		g.setFont(new Font("TIMES NEW ROMAN", Font.BOLD, 40));
@@ -479,6 +421,8 @@ public class ChessPanel extends JPanel {
 	// Methode um Spielfarbe festzulegen
 	public void setColor(boolean isWhite) {
 		this.color = isWhite;
+		this.drawB.setColor(color);
+		this.drawFP.setColor(color);
 		handlerC.setColor(isWhite);
 		repaint();
 	}
@@ -521,9 +465,7 @@ public class ChessPanel extends JPanel {
 		handlerC.setBlackRemaining(quickSaveState.getBlackTime());
 		
 		handlerC.startClocks();
-
 		repaint();
-
 		logger.info("Quickload durchgefuehrt.");
 	}
 

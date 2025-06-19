@@ -13,8 +13,8 @@ import de.thm.informatik.chess.util.PieceImageLoader;
 
 public class DrawBoard {
     private ChessEngine engine;
-    private final int squareSize;
-    private final boolean color;
+    private int squareSize;
+    private boolean color;
     private boolean showMoveOptionsSelectedPanel = false;
 
 
@@ -77,4 +77,8 @@ public class DrawBoard {
     public void setShowMoveOptions(boolean enableShowMoveOptions) {
 		this.showMoveOptionsSelectedPanel = enableShowMoveOptions;
 	}
+
+    public void setColor(boolean color) {
+        this.color = color;
+    }
 }
