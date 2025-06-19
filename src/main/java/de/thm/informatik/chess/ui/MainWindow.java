@@ -12,7 +12,7 @@ public class MainWindow {
 
         frameInput.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frameInput.setResizable(false);
-        frameInput.setSize(400, 300);
+        frameInput.setSize(500, 400);
         frameInput.setLocationRelativeTo(null);
         frameInput.setVisible(true);
     }
