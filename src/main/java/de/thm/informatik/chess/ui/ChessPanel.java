@@ -205,6 +205,23 @@ public class ChessPanel extends JPanel {
 			for (int i = 0; i < currentMoveIndex; i++) {
 				engine.makeMove(moveHistory.get(i));
 			}
+
+			//Erneute Prüfung welcher Spieler am Zug ist wenn rewinded wurde, damit korrekte Uhr startet
+			handler.pauseClocks();
+			Side currentSide = engine.getBoard().getSideToMove();
+			if (color) {
+				if (currentSide == Side.WHITE) {
+					handler.startWhiteClock();
+				} else {
+					handler.startBlackClock();
+				}
+			} else {
+				if (currentSide == Side.WHITE) {
+					handler.startBlackClock();
+				} else {
+					handler.startWhiteClock();
+				}
+			}
 			//Ansicht aktualisieren
 			repaint();
 		}
