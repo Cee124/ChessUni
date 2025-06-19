@@ -188,7 +188,7 @@ public class ChessPanel extends JPanel {
 							JOptionPane.showMessageDialog(ChessPanel.this,
 									(nextSide == WHITE ? "Schwarz" : "Weiß") + " is in Check!");
 						} else if (engine.isGameOver()) {
-							JOptionPane.showMessageDialog(ChessPanel.this, "The game is over"); 
+							JOptionPane.showMessageDialog(ChessPanel.this, "The game is over");
 						}
 						// Aktualisierung der Ansicht
 						repaint();
