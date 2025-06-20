@@ -5,7 +5,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.function.Consumer;
 
-
 import com.github.bhlangonijr.chesslib.Board;
 import com.github.bhlangonijr.chesslib.Piece;
 import com.github.bhlangonijr.chesslib.Square;
@@ -19,7 +18,7 @@ import java.awt.event.ActionListener;
 import java.util.EnumMap;
 
 public class SetupPositionPanel extends JPanel {
-	
+
 	private Consumer<Board> onDoneCallback;
 
 	private final int squareSize = 95;
@@ -115,13 +114,13 @@ public class SetupPositionPanel extends JPanel {
 
 		// Button Logik
 		doneButton.addActionListener(e -> {
-		    if (onDoneCallback != null) {
-		        onDoneCallback.accept(board);
-		    }
+			if (onDoneCallback != null) {
+				onDoneCallback.accept(board);
+			}
 
-		    if (parentFrame != null) {
-		        parentFrame.dispose();
-		    }
+			if (parentFrame != null) {
+				parentFrame.dispose();
+			}
 		});
 
 		whitePawnButton.addActionListener(e -> selectedPiece = Piece.WHITE_PAWN);
@@ -137,7 +136,7 @@ public class SetupPositionPanel extends JPanel {
 		blackKnightButton.addActionListener(e -> selectedPiece = Piece.BLACK_KNIGHT);
 		blackQueenButton.addActionListener(e -> selectedPiece = Piece.BLACK_QUEEN);
 		blackKingButton.addActionListener(e -> selectedPiece = Piece.BLACK_KING);
-		
+
 		addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -145,34 +144,32 @@ public class SetupPositionPanel extends JPanel {
 			}
 		});
 
-
 	}
-	
+
 	private void handleBoardClick(int mouseX, int mouseY) {
-		//Prüfen ob der Klick im Schachbrett ist
+		// Prüfen ob der Klick im Schachbrett ist
 		if (mouseX >= 0 && mouseX < squareSize * 8 && mouseY >= 0 && mouseY < squareSize * 8) {
 			int file = mouseX / squareSize;
-			int rank = 7 - (mouseY / squareSize); //wegen Zeichnungsrichtung
+			int rank = 7 - (mouseY / squareSize); // wegen Zeichnungsrichtung
 
-			//Wenn Brett invertiert ist, umdrehen
+			// Wenn Brett invertiert ist, umdrehen
 			if (!color) {
 				file = 7 - file;
 				rank = mouseY / squareSize;
 			}
 
-			//Feld bestimmen
+			// Feld bestimmen
 			char fileChar = (char) ('A' + file);
 			int rankNum = rank + 1;
 			Square sq = Square.valueOf("" + fileChar + rankNum);
 
 			if (selectedPiece != Piece.NONE) {
-		        board.setPiece(selectedPiece, sq);
-		        repaint();
-		    }
+				board.setPiece(selectedPiece, sq);
+				repaint();
+			}
 
 		}
 	}
-
 
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
@@ -201,22 +198,22 @@ public class SetupPositionPanel extends JPanel {
 				g.fillRect(drawFile * squareSize, drawRank * squareSize, squareSize, squareSize);
 			}
 		}
-		
+
 		// Figuren zeichnen
 		for (int rank = 0; rank < 8; rank++) {
-		    for (int file = 0; file < 8; file++) {
-		        int drawRank = color ? 7 - rank : rank;
-		        int drawFile = color ? file : 7 - file;
+			for (int file = 0; file < 8; file++) {
+				int drawRank = color ? 7 - rank : rank;
+				int drawFile = color ? file : 7 - file;
 
-		        Square sq = Square.valueOf("" + (char)('A' + file) + (rank + 1));
-		        Piece piece = board.getPiece(sq);
-		        if (piece != Piece.NONE) {
-		            Image img = PieceImageLoader.getImage(piece);
-		            if (img != null) {
-		                g.drawImage(img, drawFile * squareSize, drawRank * squareSize, squareSize, squareSize, this);
-		            }
-		        }
-		    }
+				Square sq = Square.valueOf("" + (char) ('A' + file) + (rank + 1));
+				Piece piece = board.getPiece(sq);
+				if (piece != Piece.NONE) {
+					Image img = PieceImageLoader.getImage(piece);
+					if (img != null) {
+						g.drawImage(img, drawFile * squareSize, drawRank * squareSize, squareSize, squareSize, this);
+					}
+				}
+			}
 		}
 
 	}
