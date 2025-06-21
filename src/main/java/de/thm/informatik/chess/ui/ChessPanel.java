@@ -34,6 +34,7 @@ import com.github.bhlangonijr.chesslib.move.Move;
 import de.thm.informatik.chess.domain.ChessEngine;
 import de.thm.informatik.chess.domain.ClockHandler;
 import de.thm.informatik.chess.domain.GameState;
+import de.thm.informatik.chess.domain.QuickHandler;
 import de.thm.informatik.chess.domain.ShowMoveOption;
 import de.thm.informatik.chess.service.OpeningDetection;
 import de.thm.informatik.chess.service.PGNHandling;
@@ -47,6 +48,7 @@ public class ChessPanel extends JPanel {
 	private DrawBoard drawB;
 	private final FallenPiecesHandler drawFP;
 	private Board board;
+	private QuickHandler quickHandler;
 
 	private Square selectedSquare = null;
 	private final int squareSize = 95;
@@ -106,6 +108,8 @@ public class ChessPanel extends JPanel {
 
 		this.drawB = new DrawBoard(engine, squareSize, color);
 		this.drawFP = new FallenPiecesHandler(whiteFallenPieces, blackFallenPieces, squareSize, color);
+		this.quickHandler = new QuickHandler(engine, handlerC, whiteFallenPieces, blackFallenPieces, 
+                                   currentMoveIndex, moveHistory, drawFP);
 
 		detector = new OpeningDetection();
 
@@ -143,11 +147,11 @@ public class ChessPanel extends JPanel {
 		pauseButton.addActionListener(_ -> handlerC.pauseClocks());
 
 		quicksaveButton.addActionListener(_ -> {
-			quicksave();
+			quickHandler.quicksave();
 		});
 
 		quickloadButton.addActionListener(_ -> {
-			quickload();
+			quickHandler.quickload();
 		});
 		
 		//Laden eines Spiels
@@ -482,46 +486,6 @@ public class ChessPanel extends JPanel {
 		}
 		return sb.toString();
 	}
-
-	public void quicksave() {
-		quickSaveState = new GameState(engine.getBoard().clone(), currentMoveIndex, handlerC.getWhiteRemaining(),
-				handlerC.getBlackRemaining(), engine.getBoard().getSideToMove(), whiteFallenPieces, blackFallenPieces);
-		logger.info("Quicksave durchgefuehrt.");
-	}
-
-	public void quickload() {
-		if (quickSaveState == null) {
-			logger.warn("Kein Quicksave-Zustand vorhanden.");
-			return;
-		}
-
-		// Engine zurücksetzen
-		engine.reset();
-
-		// Züge bis zum Savepoint erneut ausführen
-		currentMoveIndex = quickSaveState.getMoveIndex();
-		for (int i = 0; i < currentMoveIndex; i++) {
-			engine.makeMove(moveHistory.get(i));
-		}
-
-		// SideToMove setzen
-		engine.getBoard().setSideToMove(quickSaveState.getSideToMove());
-
-		//Uhren zurücksetzen
-		handlerC.setWhiteRemaining(quickSaveState.getWhiteTime());
-		handlerC.setBlackRemaining(quickSaveState.getBlackTime());
-
-		//gespeicherte FallenPieces aus GameState holen
-		whiteFallenPieces = new ArrayList<>(quickSaveState.getWhiteFallenPieces());
-    	blackFallenPieces = new ArrayList<>(quickSaveState.getBlackFallenPieces());
-		//FallenPiecesHandler aktualisieren
-    	drawFP.setWhiteFallenPieces(whiteFallenPieces);
-    	drawFP.setBlackFallenPieces(blackFallenPieces);
-		
-		handlerC.startClocks();
-		repaint();
-		logger.info("Quickload durchgefuehrt.");
-	}
 	
 	public void setCurrentMoveIndex(int currentMoveIndex) {
 		this.currentMoveIndex = currentMoveIndex;
@@ -532,7 +496,6 @@ public class ChessPanel extends JPanel {
 		setBoard(customBoard);
 		isCustomBoard = true;
 	    repaint();
-		
 	}
 
     public void setBoard(Board board) {
@@ -544,7 +507,6 @@ public class ChessPanel extends JPanel {
     }
     
 	public ChessEngine getEngine() {
-		
 		return engine;
 	}
 

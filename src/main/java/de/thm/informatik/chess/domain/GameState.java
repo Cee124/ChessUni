@@ -25,8 +25,7 @@ public class GameState {
 		this.blackTime = blackTime;
 		this.sideToMove = sideToMove;
 		this.whiteFallenPieces = new ArrayList<>(whiteFallenPieces);
-		this.blackFallenPieces = new ArrayList<>(blackFallenPieces);
-		
+		this.blackFallenPieces = new ArrayList<>(blackFallenPieces);		
 	}
 
 	public Board getBoard() {
