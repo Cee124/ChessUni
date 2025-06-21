@@ -10,6 +10,8 @@ import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,6 +19,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.apache.logging.log4j.LogManager;
@@ -33,8 +36,10 @@ import de.thm.informatik.chess.domain.ChessEngine;
 import de.thm.informatik.chess.domain.ClockHandler;
 import de.thm.informatik.chess.domain.GameState;
 import de.thm.informatik.chess.domain.OpeningDetection;
+
 import de.thm.informatik.chess.domain.ShowMoveOption;
 import de.thm.informatik.chess.domain.UciParser;
+import de.thm.informatik.chess.util.PieceImageLoader;
 
 public class ChessPanel extends JPanel {
 
@@ -52,6 +57,8 @@ public class ChessPanel extends JPanel {
 	private final JButton pauseButton;
 	private final JButton quicksaveButton;
 	private final JButton quickloadButton;
+    private final JButton loadPGNButton;
+    private final JButton savePGNButton;
 
 	private int currentMoveIndex;
 
@@ -70,11 +77,16 @@ public class ChessPanel extends JPanel {
 	private List<Piece> whiteFallenPieces = new ArrayList<>();
 	private List<Piece> blackFallenPieces = new ArrayList<>();
 
-    private ShowMoveOption moveOption;
-    private List<Square> highlightedSquares = new ArrayList<>();
+	private ShowMoveOption moveOption;
+	private List<Square> highlightedSquares = new ArrayList<>();
+	private boolean showMoveOptionsSelectedPanel = false;
 
 	public void setRewind(boolean enableRewind) {
 		this.rewindSelectedPanel = enableRewind;
+	}
+
+	public void setShowMoveOptions(boolean enableShowMoveOptions) {
+		this.showMoveOptionsSelectedPanel = enableShowMoveOptions;
 	}
 
 	public ChessPanel(ClockHandler handler) throws IOException {
@@ -87,28 +99,32 @@ public class ChessPanel extends JPanel {
 
 		openingMap = detector.loadOpenings("/Openings/eco_openings.html");
 
-        moveOption = new ShowMoveOption(engine);
+		moveOption = new ShowMoveOption(engine);
 
-		//Um Objekte individuell anordnen zu können
+		// Um Objekte individuell anordnen zu können
 		setLayout(null);
 
-		//Icons für Buttons holen
+		// Icons für Buttons holen
 		forwardButton = new JButton(PieceIconLoader.FORWARD_ICON);
 		rewindButton = new JButton(PieceIconLoader.REWIND_ICON);
 		startButton = new JButton(PieceIconLoader.START_ICON);
 		pauseButton = new JButton(PieceIconLoader.PAUSE_ICON);
 		quicksaveButton = new JButton(PieceIconLoader.QUICKSAVE_ICON);
 		quickloadButton = new JButton(PieceIconLoader.QUICKLOAD_ICON);
+		loadPGNButton = new JButton("PGN laden");
+		savePGNButton = new JButton("PGN speichern");
 
-		//Buttons dem Panel hinzufügen
+		// Buttons dem Panel hinzufügen
 		add(forwardButton);
 		add(rewindButton);
 		add(startButton);
 		add(pauseButton);
 		add(quicksaveButton);
 		add(quickloadButton);
+		add(loadPGNButton);
+		add(savePGNButton);
 
-		//Button Logik
+		// Button Logik
 		forwardButton.addActionListener(e -> fastForwardMove());
 		rewindButton.addActionListener(e -> rewindMove());
 		startButton.addActionListener(e -> handler.startClocks());
@@ -121,6 +137,40 @@ public class ChessPanel extends JPanel {
 		quickloadButton.addActionListener(e -> {
 			quickload();
 		});
+		
+		//Laden eines Spiels
+        loadPGNButton.addActionListener(e -> {
+            javax.swing.JFileChooser fileChooser = new javax.swing.JFileChooser();
+            fileChooser.setDialogTitle("PGN-Datei laden");
+
+            int userSelection = fileChooser.showOpenDialog(this);
+
+            if (userSelection == javax.swing.JFileChooser.APPROVE_OPTION) {
+                java.io.File fileToLoad = fileChooser.getSelectedFile();
+                String filePath = fileToLoad.getAbsolutePath();
+                
+                PGNHandling.loadGame(filePath, engine);
+                currentMoveIndex = moveHistory.size();
+                handler.pauseClocks();           // Uhren anhalten
+                handler.setWhiteRemaining(0);    // Zeit auf 0 setzen (optional)
+                handler.setBlackRemaining(0);
+
+
+                repaint();
+            }
+        });
+
+
+        //Speichern eines Spiels
+        savePGNButton.addActionListener(e -> {
+        	//für den aktuellen Zeitpunkt im Dateinamen
+        	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
+        	String timestamp = LocalDateTime.now().format(formatter);
+        	String filePath = "games/game_" + timestamp + ".pgn";
+        	
+            PGNHandling pgnHandler = new PGNHandling(filePath);
+            pgnHandler.saveGame(ChessPanel.getMoveHistory());
+        });
 
 		addMouseListener(new MouseAdapter() {
 			@Override
@@ -135,24 +185,25 @@ public class ChessPanel extends JPanel {
 				if (selectedSquare == null) {
 					if (engine.getPiece(clickedSquare) != Piece.NONE) {
 						selectedSquare = clickedSquare;
-                        highlightedSquares = moveOption.getLegalTargetSquares(selectedSquare);
+						highlightedSquares = moveOption.getLegalTargetSquares(selectedSquare);
 						repaint();
 					}
 				} else {
 					Move move = new Move(selectedSquare, clickedSquare);
-					//Liste aller legalen Moves
+					// Liste aller legalen Moves
 					List<Move> legalMoves = engine.getLegalMoves();
 
-					//Wenn die Liste eine Zug enthält
+					// Wenn die Liste eine Zug enthält
 					if (legalMoves.contains(move)) {
-						if(isCaptured){
-							if(engine.getBoard().getSideToMove() == WHITE){
+						Side movingSide = engine.getBoard().getSideToMove();
+						if (isCaptured) {
+							if (engine.getBoard().getSideToMove() == WHITE) {
 								whiteFallenPieces.add(targetPiece);
-							}else{
+							} else {
 								blackFallenPieces.add(targetPiece);
 							}
 						}
-						//Zug wird ausgeführt
+						// Zug wird ausgeführt
 						engine.makeMove(move);
 						moveHistory.subList(currentMoveIndex, moveHistory.size()).clear();
 						moveHistory.add(move);
@@ -172,65 +223,96 @@ public class ChessPanel extends JPanel {
 								handler.startWhiteClock();
 							}
 						}
-						//Aktualisierung der Ansicht
+
+						// Schachmatt-Erkennung
+						if (engine.isCheckmate()) {
+							JOptionPane.showMessageDialog(ChessPanel.this,
+									"Checkmate! " + (movingSide == WHITE ? "Black" : "White") + " loses.");
+							handler.pauseClocks();
+						}
+						// Schach-Erkennung
+						else if (engine.isInCheck()) {
+							JOptionPane.showMessageDialog(ChessPanel.this,
+									(nextSide == WHITE ? "Schwarz" : "Weiß") + " is in Check!");
+						} else if (engine.isGameOver()) {
+							JOptionPane.showMessageDialog(ChessPanel.this, "The game is over");
+						}
+						// Aktualisierung der Ansicht
 						repaint();
-						//Wenn kein legaler Zug erkannt wurde Fehlermeldung ausgeben
+						// Wenn kein legaler Zug erkannt wurde Fehlermeldung ausgeben
 					} else {
 						logger.debug("Illegal Move: " + move);
 					}
 					selectedSquare = null;
-                    highlightedSquares.clear();
-					//Ansicht akutalisieren
+					highlightedSquares.clear();
+					// Ansicht akutalisieren
 					repaint();
 				}
 			}
 		});
 	}
 
-	//Methode um Liste gemachter Züge zurückzugeben
+	// Methode um Liste gemachter Züge zurückzugeben
 	public static List<Move> getMoveHistory() {
 		return moveHistory;
 	}
 
-	//Methode für rewind-Button Logik
+	// Methode für rewind-Button Logik
 	private void rewindMove() {
 		if (!rewindSelectedPanel) {
 			return;
 		}
-		//Wenn Züge gemacht wurden
+		// Wenn Züge gemacht wurden
 		if (currentMoveIndex > 0) {
-			//index auf moveHistory.size() - 1 setzen
+			// index auf moveHistory.size() - 1 setzen
 			currentMoveIndex--;
-			//Schachgame zurücksetzen
+			// Schachgame zurücksetzen
 			engine.reset();
-			//Alle Züge machen die in der moveHistory gespeichert sind bis zu
-			//index(moveHistory.size() - 1)
+			// Alle Züge machen die in der moveHistory gespeichert sind bis zu
+			// index(moveHistory.size() - 1)
 			for (int i = 0; i < currentMoveIndex; i++) {
 				engine.makeMove(moveHistory.get(i));
+			}
+
+			//Erneute Prüfung welcher Spieler am Zug ist wenn rewinded wurde, damit korrekte Uhr startet
+			handler.pauseClocks();
+			Side currentSide = engine.getBoard().getSideToMove();
+			if (color) {
+				if (currentSide == Side.WHITE) {
+					handler.startWhiteClock();
+				} else {
+					handler.startBlackClock();
+				}
+			} else {
+				if (currentSide == Side.WHITE) {
+					handler.startBlackClock();
+				} else {
+					handler.startWhiteClock();
+				}
 			}
 			//Ansicht aktualisieren
 			repaint();
 		}
 	}
 
-	//Methode für forward-Button Logik
+	// Methode für forward-Button Logik
 	private void fastForwardMove() {
-		//Wenn index größer/gleich zuganzahl dann wird nichts gemacht
+		// Wenn index größer/gleich zuganzahl dann wird nichts gemacht
 		if (currentMoveIndex >= moveHistory.size()) {
 			return;
 		}
-		//Zug aus der Zugliste holen
+		// Zug aus der Zugliste holen
 		Move forwardMove = moveHistory.get(currentMoveIndex);
-		//Rückgängig gemachten Zug ausführen
+		// Rückgängig gemachten Zug ausführen
 		engine.makeMove(forwardMove);
-		//Index wieder hochzählen
+		// Index wieder hochzählen
 		currentMoveIndex++;
-		//Ansicht aktualisieren
+		// Ansicht aktualisieren
 		repaint();
 	}
 
 	@Override
-	//Methode zum festlegen der Button Positionen
+	// Methode zum festlegen der Button Positionen
 	public void doLayout() {
 		super.doLayout();
 
@@ -250,15 +332,17 @@ public class ChessPanel extends JPanel {
 		forwardButton.setBounds(forwardButtonX, buttonY, 30, 30);
 		quicksaveButton.setBounds(centerInStats - 30 - 20, buttonY, 30, 30);
 		quickloadButton.setBounds(centerInStats + 60 + 40, buttonY, 30, 30);
+		loadPGNButton.setBounds(1250, 500, 150, 30);
+        savePGNButton.setBounds(1250, 540, 150, 30);
 
 	}
 
 	@Override
-	//Methode zum Formatieren und Bearbeiten von Objekten
+	// Methode zum Formatieren und Bearbeiten von Objekten
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 
-		//Rechte Bildschirmhälfte dunkelgrün färben
+		// Rechte Bildschirmhälfte dunkelgrün färben
 		Graphics2D g2 = (Graphics2D) g.create();
 		Color colorRightSide = new Color(180, 180, 180);
 		int panelWidth = getWidth();
@@ -268,182 +352,184 @@ public class ChessPanel extends JPanel {
 
 		int boardPixelSize = 8 * squareSize;
 
-		//Specs für Uhren Positionen
+		// Specs für Uhren Positionen
 		int clockX = boardPixelSize + 50;
 		int whiteClockY = boardPixelSize - 50;
 		int blackClockY = 50;
 
-		//General specs für Stats Window
+		// General specs für Stats Window
 		int statsX = getWidth() - 300 - 100;
 		int statsY = 200;
 
-		//Opening Detection Window
+		// Opening Detection Window
 		int openingRectX = statsX;
 		int openingRectY = statsY - 40;
 		int openingRectWidth = 300;
 		int openingRectHeight = 40;
 
-		//Rechteck schwarz und dicke 3 und dann Zeichnen mit specs
+		// Rechteck schwarz und dicke 3 und dann Zeichnen mit specs
 		g2.setColor(Color.BLACK);
 		g2.setStroke(new BasicStroke(3));
 		g2.drawRect(openingRectX, openingRectY, openingRectWidth, openingRectHeight);
 
-		//Initialisierung um Openings darstellen zu können
+		// Initialisierung um Openings darstellen zu können
 		List<Move> currentMoves = getMoveHistory();
 		String currentUciMoves = convertMoveListToUci(currentMoves);
 		String sanAnnotated = UciParser.convertUciToAnnotatedMoves(currentUciMoves);
-		//Variablenzuweisung um letzte erkannte Eröffnung zu speichern
+		// Variablenzuweisung um letzte erkannte Eröffnung zu speichern
 		String openingText = lastDetectedOpening;
 
-		//Durch Map mit Eröffnungen iterieren
+		// Durch Map mit Eröffnungen iterieren
 		for (Map.Entry<String, String> entry : openingMap.entrySet()) {
-			//Key und Value der Map in extra Variablen speichern
+			// Key und Value der Map in extra Variablen speichern
 			String openingSequence = entry.getKey();
 			String openingName = entry.getValue();
 
-			//Wenn aktuelle Zugabfolge mit Opening übereinstimmt dann break und der
-			//openingText wird auf den openingName gesetzt
+			// Wenn aktuelle Zugabfolge mit Opening übereinstimmt dann break und der
+			// openingText wird auf den openingName gesetzt
 			if (sanAnnotated.equals(openingSequence)) {
-				//Damit falls nichts mehr erkannt wird die letzte Eröffnung gespeichert wird
+				// Damit falls nichts mehr erkannt wird die letzte Eröffnung gespeichert wird
 				lastDetectedOpening = openingName;
 				openingText = openingName;
 				break;
 			}
 		}
 
-		//Schrift für OpeningText
-		if(!openingText.equals("Keine Eröffnung erkannt")){
+		// Schrift für OpeningText
+		if (!openingText.equals("Keine Eröffnung erkannt")) {
 			g2.setColor(new Color(60, 179, 13));
-		}else{
+		} else {
 			g2.setColor(new Color(220, 20, 60));
 		}
 		g2.setFont(new Font("SansSerif", Font.BOLD, 14));
 		FontMetrics fm = g2.getFontMetrics();
-		//Ermittelt breite von openingText
+		// Ermittelt breite von openingText
 		int textWidth = fm.stringWidth(openingText);
-		//Opening Text schreiben
+		// Opening Text schreiben
 		g2.drawString(openingText, openingRectX + (openingRectWidth - textWidth) / 2, openingRectY + 25);
 
-		//Draw chess board
-        for (int rank = 0; rank < 8; rank++) {
-            for (int file = 0; file < 8; file++) {
-                int drawRank = color ? 7 - rank : rank;
-                int drawFile = color ? file : 7 - file;
+		// Draw chess board
+		for (int rank = 0; rank < 8; rank++) {
+			for (int file = 0; file < 8; file++) {
+				int drawRank = color ? 7 - rank : rank;
+				int drawFile = color ? file : 7 - file;
 
-                if ((rank + file) % 2 == 0) {
-                    g.setColor(Color.lightGray);
-                } else {
-                    g.setColor(Color.white);
-                }
-                g.fillRect(drawFile * squareSize, drawRank * squareSize, squareSize, squareSize);
-            }
-        }
+				if ((rank + file) % 2 == 0) {
+					g.setColor(Color.lightGray);
+				} else {
+					g.setColor(Color.white);
+				}
+				g.fillRect(drawFile * squareSize, drawRank * squareSize, squareSize, squareSize);
+			}
+		}
 
-        //Highlight-Ziele anzeigen
-        for (Square sq : highlightedSquares) {
-            int file = color ? sq.getFile().ordinal() : 7 - sq.getFile().ordinal();
-            int rank = color ? 7 - sq.getRank().ordinal() : sq.getRank().ordinal();
-            g.setColor(new Color(100, 180, 255, 128));
-            g.fillRect(file * squareSize, rank * squareSize, squareSize, squareSize);
-        }
-		//Draw pieces
-        for (int rank = 0; rank < 8; rank++) {
-            for (int file = 0; file < 8; file++) {
-                int drawRank = color ? 7 - rank : rank;
-                int drawFile = color ? file : 7 - file;
+		// Highlight-Ziele anzeigen
+		if (showMoveOptionsSelectedPanel) {
+			for (Square sq : highlightedSquares) {
+				int file = color ? sq.getFile().ordinal() : 7 - sq.getFile().ordinal();
+				int rank = color ? 7 - sq.getRank().ordinal() : sq.getRank().ordinal();
+				g.setColor(new Color(100, 180, 255, 128));
+				g.fillRect(file * squareSize, rank * squareSize, squareSize, squareSize);
+			}
+		}
+		// Draw pieces
+		for (int rank = 0; rank < 8; rank++) {
+			for (int file = 0; file < 8; file++) {
+				int drawRank = color ? 7 - rank : rank;
+				int drawFile = color ? file : 7 - file;
 
-                Square sq = squareFromCoords(rank, file);
-                Piece piece = engine.getBoard().getPiece(sq);
-                if (piece != Piece.NONE) {
-                    Image img = PieceImageLoader.getImage(piece);
-                    if (img != null) {
-                        g.drawImage(img, drawFile * squareSize, drawRank * squareSize, squareSize, squareSize, this);
-                    }
-                }
-            }
-        }
+				Square sq = squareFromCoords(rank, file);
+				Piece piece = engine.getBoard().getPiece(sq);
+				if (piece != Piece.NONE) {
+					Image img = PieceImageLoader.getImage(piece);
+					if (img != null) {
+						g.drawImage(img, drawFile * squareSize, drawRank * squareSize, squareSize, squareSize, this);
+					}
+				}
+			}
+		}
 
-		//Specs fallen pieces
+		// Specs fallen pieces
 		List<Piece> bottomPieces = color ? whiteFallenPieces : blackFallenPieces;
-		List<Piece> topPieces = color? blackFallenPieces : whiteFallenPieces;
+		List<Piece> topPieces = color ? blackFallenPieces : whiteFallenPieces;
 
-		//Draw fallen pieces white
+		// Draw fallen pieces white
 		int xPieceWhite = clockX;
 		int yPieceWhite = boardPixelSize - 100;
 		int countWhite = 0;
-		for(Piece p : bottomPieces){
+		for (Piece p : bottomPieces) {
 			countWhite++;
 			Image imgP = PieceImageLoader.getImage(p);
-			if(imgP != null){
+			if (imgP != null) {
 				g.drawImage(imgP, xPieceWhite, yPieceWhite, 20, 20, this);
 			}
-			if(countWhite % 6 == 0){
+			if (countWhite % 6 == 0) {
 				yPieceWhite -= 20;
 			}
-			if(countWhite < 6 && countWhite != 7){
+			if (countWhite < 6 && countWhite != 7) {
 				xPieceWhite += 15;
-			}else if(countWhite > 6 && countWhite != 7 && countWhite < 12){
+			} else if (countWhite > 6 && countWhite != 7 && countWhite < 12) {
 				xPieceWhite -= 15;
-			}else if(countWhite > 12 && countWhite != 13){
+			} else if (countWhite > 12 && countWhite != 13) {
 				xPieceWhite += 15;
 			}
-			if(countWhite == 7){
+			if (countWhite == 7) {
 				xPieceWhite -= 15;
-			}else if(countWhite == 13){
+			} else if (countWhite == 13) {
 				xPieceWhite += 15;
 			}
-			
+
 		}
 
-		//Draw fallen pieces black
+		// Draw fallen pieces black
 		int xPieceBlack = clockX;
 		int yPieceBlack = 52;
 		int countBlack = 0;
-		for(Piece p : topPieces){
+		for (Piece p : topPieces) {
 			countBlack++;
 			Image imgP = PieceImageLoader.getImage(p);
-			if(imgP != null){
+			if (imgP != null) {
 				g.drawImage(imgP, xPieceBlack, yPieceBlack, 20, 20, this);
 			}
-			if(countBlack % 6 == 0){
+			if (countBlack % 6 == 0) {
 				yPieceBlack += 20;
 			}
-			if(countBlack < 6 && countBlack != 7){
+			if (countBlack < 6 && countBlack != 7) {
 				xPieceBlack += 15;
-			}else if(countBlack > 6 && countBlack != 7 && countBlack < 12){
+			} else if (countBlack > 6 && countBlack != 7 && countBlack < 12) {
 				xPieceBlack -= 15;
-			}else if(countBlack > 12 && countBlack != 13){
+			} else if (countBlack > 12 && countBlack != 13) {
 				xPieceBlack += 15;
 			}
-			if(countBlack == 7){
+			if (countBlack == 7) {
 				xPieceBlack -= 15;
-			}else if(countBlack == 13){
+			} else if (countBlack == 13) {
 				xPieceBlack += 15;
 			}
 		}
 
-		//Draw clocks
+		// Draw clocks
 		g.setFont(new Font("TIMES NEW ROMAN", Font.BOLD, 40));
 
-		//White clock
-		//Wenn weiße Uhr läuft dann rote Darstellung sonst schwarz
+		// White clock
+		// Wenn weiße Uhr läuft dann rote Darstellung sonst schwarz
 		g.setColor(handler.isWhiteRunning() ? Color.RED : Color.BLACK);
-		//Da in ms dargestellt muss man durch 1000 teilen für Sekunden
+		// Da in ms dargestellt muss man durch 1000 teilen für Sekunden
 		long whiteTimeMs = handler.getWhiteRemaining();
 		String whiteTime = formatTime(whiteTimeMs);
-		//Weße Uhr zeichnen
+		// Weße Uhr zeichnen
 		g.drawString(whiteTime, clockX, whiteClockY);
 
-		//Black clock
-		//Wenn schwarze Uhr läuft dann rote Darstellung sonst schwarz
+		// Black clock
+		// Wenn schwarze Uhr läuft dann rote Darstellung sonst schwarz
 		g.setColor(handler.isBlackRunning() ? Color.RED : Color.BLACK);
-		//Da in ms dargestellt muss man durch 1000 teilen für Sekunden
+		// Da in ms dargestellt muss man durch 1000 teilen für Sekunden
 		long blackTimeMs = handler.getBlackRemaining();
 		String blackTime = formatTime(blackTimeMs);
-		//Schwarze Uhr zeichnen
+		// Schwarze Uhr zeichnen
 		g.drawString(blackTime, clockX, blackClockY);
 
-		//Draw stats display
+		// Draw stats display
 		g.setFont(new Font("Monospaced", Font.PLAIN, 14));
 		g.setColor(Color.BLACK);
 
@@ -454,9 +540,9 @@ public class ChessPanel extends JPanel {
 
 		int statsRectY = statsY + 40;
 		int statsRectWidth = 300;
-		//Wenn züge < 10 dann zuganzahl und sonst 10
+		// Wenn züge < 10 dann zuganzahl und sonst 10
 		int visibleMoves = Math.min(10, moves.size());
-		//mind. 40 und maximal 220(da visibleMoves max 10)
+		// mind. 40 und maximal 220(da visibleMoves max 10)
 		int statsRectHeight = Math.max(40, visibleMoves * 20);
 
 		int operationRectWidth = 300;
@@ -466,36 +552,36 @@ public class ChessPanel extends JPanel {
 		g2.drawRect(statsX, operationRectY, operationRectWidth, operationRectHeight);
 		g2.drawRect(statsX, statsRectY, statsRectWidth, statsRectHeight);
 
-		//Wenn mehr als 10 Züge (0, 12-10 = 0, 2 -> index 2 bis 11) sonst 0 bis
-		//move.size()
-		//also wird hier der Startindex ermittelt
+		// Wenn mehr als 10 Züge (0, 12-10 = 0, 2 -> index 2 bis 11) sonst 0 bis
+		// move.size()
+		// also wird hier der Startindex ermittelt
 		int start = Math.max(0, moves.size() - 10);
 		for (int i = start; i < moves.size(); i++) {
-			//Liefert boolean zurück ob gerade
+			// Liefert boolean zurück ob gerade
 			Predicate<Integer> isWhite = p -> p % 2 == 0;
-			//Wenn gerade dann zug weiß sonst schwarz
+			// Wenn gerade dann zug weiß sonst schwarz
 			String colorText = isWhite.test(i) ? "Weiß" : "Schwarz";
-			//aktueller move als text in variable speichern
+			// aktueller move als text in variable speichern
 			String moveText = moves.get(i).toString();
 
-			//Y Position wird dynamisch ermittelt je nachdem wie vielter zug es ist
+			// Y Position wird dynamisch ermittelt je nachdem wie vielter zug es ist
 			int offset = i - start;
 			int textY = statsY + 55 + offset * 20;
 
-			//Wenn i gerade dann ist die Schriftfarbe weiß sonst schwarz
+			// Wenn i gerade dann ist die Schriftfarbe weiß sonst schwarz
 			g2.setFont(new Font("Monospaced", Font.BOLD, 14));
 			g2.setColor(isWhite.test(i) ? Color.WHITE : Color.BLACK);
 
-			//einzelteile zusammensetzen
+			// einzelteile zusammensetzen
 			String label = colorText + ":";
 			FontMetrics fm1 = g2.getFontMetrics();
 			int labelWidth = fm1.stringWidth(label);
 
-			//label und text zeichnen
+			// label und text zeichnen
 			g2.drawString(label, statsX + 100, textY);
 			g2.drawString(moveText, statsX + 100 + labelWidth + 10, textY);
 
-			//Trennlinie erweiter sich dynamisch
+			// Trennlinie erweiter sich dynamisch
 			g2.setColor(Color.BLACK);
 			g2.drawLine(statsX, statsY + 60 + offset * 20, statsX + 300, statsY + 60 + offset * 20);
 		}
@@ -503,7 +589,7 @@ public class ChessPanel extends JPanel {
 
 	}
 
-	//Methode um Zeitanzeige im format mm:ss zu erstellen
+	// Methode um Zeitanzeige im format mm:ss zu erstellen
 	private String formatTime(long millis) {
 		long totalSeconds = millis / 1000;
 		long minutes = totalSeconds / 60;
@@ -511,14 +597,14 @@ public class ChessPanel extends JPanel {
 		return String.format("%02d:%02d", minutes, seconds);
 	}
 
-	//Methode um Spielfarbe festzulegen
+	// Methode um Spielfarbe festzulegen
 	public void setColor(boolean isWhite) {
 		this.color = isWhite;
 		handler.setColor(isWhite);
 		repaint();
 	}
 
-	//Methode um aktuelle züge in Uci Format darzustellen
+	// Methode um aktuelle züge in Uci Format darzustellen
 	private String convertMoveListToUci(List<Move> moves) {
 		StringBuilder sb = new StringBuilder();
 		for (Move move : moves) {
@@ -546,27 +632,31 @@ public class ChessPanel extends JPanel {
 			return;
 		}
 
-		//Engine zurücksetzen
+		// Engine zurücksetzen
 		engine.reset();
 
-		//Züge bis zum Savepoint erneut ausführen
+		// Züge bis zum Savepoint erneut ausführen
 		currentMoveIndex = quickSaveState.getMoveIndex();
 		for (int i = 0; i < currentMoveIndex; i++) {
 			engine.makeMove(moveHistory.get(i));
 		}
 
-		//SideToMove setzen
+		// SideToMove setzen
 		engine.getBoard().setSideToMove(quickSaveState.getSideToMove());
 
-		//Uhren zurücksetzen
+		// Uhren zurücksetzen
 		handler.setWhiteRemaining(quickSaveState.getWhiteTime());
 		handler.setBlackRemaining(quickSaveState.getBlackTime());
-		
+
 		handler.startClocks();
 
 		repaint();
 
 		logger.info("Quickload durchgefuehrt.");
+	}
+	
+	public void setCurrentMoveIndex(int currentMoveIndex) {
+		this.currentMoveIndex = currentMoveIndex;
 	}
 
 	public void setCustomBoard(Board customBoard) {
