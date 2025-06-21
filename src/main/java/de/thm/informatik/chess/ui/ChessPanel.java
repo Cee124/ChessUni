@@ -9,6 +9,8 @@ import java.awt.Graphics2D;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,6 +24,7 @@ import javax.swing.JPanel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.github.bhlangonijr.chesslib.Board;
 import com.github.bhlangonijr.chesslib.Piece;
 import com.github.bhlangonijr.chesslib.Side;
 import static com.github.bhlangonijr.chesslib.Side.WHITE;
@@ -31,19 +34,19 @@ import com.github.bhlangonijr.chesslib.move.Move;
 import de.thm.informatik.chess.domain.ChessEngine;
 import de.thm.informatik.chess.domain.ClockHandler;
 import de.thm.informatik.chess.domain.GameState;
-import de.thm.informatik.chess.domain.OpeningDetection;
 import de.thm.informatik.chess.domain.ShowMoveOption;
-import de.thm.informatik.chess.domain.SkipHandler;
-import de.thm.informatik.chess.domain.UciParser;
-import de.thm.informatik.chess.util.IconLoader;
+import de.thm.informatik.chess.service.OpeningDetection;
+import de.thm.informatik.chess.service.PGNHandling;
+import de.thm.informatik.chess.util.UciParser;
 
 public class ChessPanel extends JPanel {
 
 	private ChessEngine engine = new ChessEngine();
-	private ClockHandler handlerC;
+	private final ClockHandler handlerC;
 	private SkipHandler handlerS;
 	private DrawBoard drawB;
-	private FallenPiecesHandler drawFP;
+	private final FallenPiecesHandler drawFP;
+	private Board board;
 
 	private Square selectedSquare = null;
 	private final int squareSize = 95;
@@ -55,6 +58,8 @@ public class ChessPanel extends JPanel {
 	private final JButton pauseButton;
 	private final JButton quicksaveButton;
 	private final JButton quickloadButton;
+    private final JButton loadPGNButton;
+    private final JButton savePGNButton;
 
 	private int currentMoveIndex;
 
@@ -75,6 +80,7 @@ public class ChessPanel extends JPanel {
 
 	private ShowMoveOption moveOption;
 	private List<Square> highlightedSquares = new ArrayList<>();
+	private boolean isCustomBoard = false;
 
 	public void setRewind(boolean enableRewind) {
 		this.rewindSelectedPanel = enableRewind;
@@ -82,10 +88,6 @@ public class ChessPanel extends JPanel {
 
 	public int getCurrentMoveIndex(){
 		return currentMoveIndex;
-	}
-
-	public void setCurrentMoveIndex(int index){
-		this.currentMoveIndex = index;
 	}
 
 	public DrawBoard getDrawBoard(){
@@ -115,12 +117,14 @@ public class ChessPanel extends JPanel {
 		setLayout(null);
 
 		// Icons für Buttons holen
-		forwardButton = new JButton(IconLoader.FORWARD_ICON);
-		rewindButton = new JButton(IconLoader.REWIND_ICON);
-		startButton = new JButton(IconLoader.START_ICON);
-		pauseButton = new JButton(IconLoader.PAUSE_ICON);
-		quicksaveButton = new JButton(IconLoader.QUICKSAVE_ICON);
-		quickloadButton = new JButton(IconLoader.QUICKLOAD_ICON);
+		forwardButton = new JButton(PieceIconLoader.FORWARD_ICON);
+		rewindButton = new JButton(PieceIconLoader.REWIND_ICON);
+		startButton = new JButton(PieceIconLoader.START_ICON);
+		pauseButton = new JButton(PieceIconLoader.PAUSE_ICON);
+		quicksaveButton = new JButton(PieceIconLoader.QUICKSAVE_ICON);
+		quickloadButton = new JButton(PieceIconLoader.QUICKLOAD_ICON);
+		loadPGNButton = new JButton("PGN laden");
+		savePGNButton = new JButton("PGN speichern");
 
 		// Buttons dem Panel hinzufügen
 		add(forwardButton);
@@ -129,20 +133,56 @@ public class ChessPanel extends JPanel {
 		add(pauseButton);
 		add(quicksaveButton);
 		add(quickloadButton);
+		add(loadPGNButton);
+		add(savePGNButton);
 
 		//Button Logik
-		forwardButton.addActionListener(e -> handlerS.fastForwardMove());
-		rewindButton.addActionListener(e -> handlerS.rewindMove());
-		startButton.addActionListener(e -> handlerC.startClocks());
-		pauseButton.addActionListener(e -> handlerC.pauseClocks());
+		forwardButton.addActionListener(_ -> handlerS.fastForwardMove());
+		rewindButton.addActionListener(_ -> handlerS.rewindMove());
+		startButton.addActionListener(_ -> handlerC.startClocks());
+		pauseButton.addActionListener(_ -> handlerC.pauseClocks());
 
-		quicksaveButton.addActionListener(e -> {
+		quicksaveButton.addActionListener(_ -> {
 			quicksave();
 		});
 
-		quickloadButton.addActionListener(e -> {
+		quickloadButton.addActionListener(_ -> {
 			quickload();
 		});
+		
+		//Laden eines Spiels
+        loadPGNButton.addActionListener(_ -> {
+            javax.swing.JFileChooser fileChooser = new javax.swing.JFileChooser();
+            fileChooser.setDialogTitle("PGN-Datei laden");
+
+            int userSelection = fileChooser.showOpenDialog(this);
+
+            if (userSelection == javax.swing.JFileChooser.APPROVE_OPTION) {
+                java.io.File fileToLoad = fileChooser.getSelectedFile();
+                String filePath = fileToLoad.getAbsolutePath();
+                
+                PGNHandling.loadGame(filePath, engine);
+                currentMoveIndex = moveHistory.size();
+                handlerC.pauseClocks();           // Uhren anhalten
+                handlerC.setWhiteRemaining(0);    // Zeit auf 0 setzen (optional)
+                handlerC.setBlackRemaining(0);
+
+
+                repaint();
+            }
+        });
+
+
+        //Speichern eines Spiels
+        savePGNButton.addActionListener(_ -> {
+        	//für den aktuellen Zeitpunkt im Dateinamen
+        	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
+        	String timestamp = LocalDateTime.now().format(formatter);
+        	String filePath = "games/game_" + timestamp + ".pgn";
+        	
+            PGNHandling pgnHandler = new PGNHandling(filePath);
+            pgnHandler.saveGame(ChessPanel.getMoveHistory());
+        });
 
 		addMouseListener(new MouseAdapter() {
 			@Override
@@ -201,13 +241,13 @@ public class ChessPanel extends JPanel {
 						// Schachmatt-Erkennung
 						if (engine.isCheckmate()) {
 							JOptionPane.showMessageDialog(ChessPanel.this,
-									"Checkmate! " + (movingSide == WHITE ? "Black" : "White") + " loses.");
+									"Checkmate! " + (movingSide == WHITE ? "White" : "Black") + " loses.");
 							handlerC.pauseClocks();
 						}
 						// Schach-Erkennung
 						else if (engine.isInCheck()) {
 							JOptionPane.showMessageDialog(ChessPanel.this,
-									(nextSide == WHITE ? "Schwarz" : "Weiß") + " is in Check!");
+									(nextSide == WHITE ? "White" : "Black") + " is in Check!");
 						} else if (engine.isGameOver()) {
 							JOptionPane.showMessageDialog(ChessPanel.this, "The game is over");
 						}
@@ -252,6 +292,8 @@ public class ChessPanel extends JPanel {
 		forwardButton.setBounds(forwardButtonX, buttonY, 30, 30);
 		quicksaveButton.setBounds(centerInStats - 30 - 20, buttonY, 30, 30);
 		quickloadButton.setBounds(centerInStats + 60 + 40, buttonY, 30, 30);
+		loadPGNButton.setBounds(1250, 500, 150, 30);
+        savePGNButton.setBounds(1250, 540, 150, 30);
 
 	}
 
@@ -296,7 +338,12 @@ public class ChessPanel extends JPanel {
 		// Initialisierung um Openings darstellen zu können
 		List<Move> currentMoves = getMoveHistory();
 		String currentUciMoves = convertMoveListToUci(currentMoves);
-		String sanAnnotated = UciParser.convertUciToAnnotatedMoves(currentUciMoves);
+		
+		String sanAnnotated = "";
+		
+		if (!this.isCustomBoard) {
+			sanAnnotated =  UciParser.convertUciToAnnotatedMoves(currentUciMoves);
+		} 
 		// Variablenzuweisung um letzte erkannte Eröffnung zu speichern
 		String openingText = lastDetectedOpening;
 
@@ -305,7 +352,7 @@ public class ChessPanel extends JPanel {
 			// Key und Value der Map in extra Variablen speichern
 			String openingSequence = entry.getKey();
 			String openingName = entry.getValue();
-
+			
 			// Wenn aktuelle Zugabfolge mit Opening übereinstimmt dann break und der
 			// openingText wird auf den openingName gesetzt
 			if (sanAnnotated.equals(openingSequence)) {
@@ -474,6 +521,31 @@ public class ChessPanel extends JPanel {
 		handlerC.startClocks();
 		repaint();
 		logger.info("Quickload durchgefuehrt.");
+	}
+	
+	public void setCurrentMoveIndex(int currentMoveIndex) {
+		this.currentMoveIndex = currentMoveIndex;
+	}
+
+	public void setCustomBoard(Board customBoard) {
+		engine.setBoard(customBoard);
+		setBoard(customBoard);
+		isCustomBoard = true;
+	    repaint();
+		
+	}
+
+    public void setBoard(Board board) {
+        this.board = board;
+    }
+
+    public Board getBoard() {
+        return board;
+    }
+    
+	public ChessEngine getEngine() {
+		
+		return engine;
 	}
 
 }

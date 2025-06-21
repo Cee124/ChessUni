@@ -6,13 +6,17 @@ import com.github.bhlangonijr.chesslib.Board;
 import com.github.bhlangonijr.chesslib.Piece;
 import com.github.bhlangonijr.chesslib.Square;
 import com.github.bhlangonijr.chesslib.move.Move;
-import com.github.bhlangonijr.chesslib.Side;
+
 public class ChessEngine {
 
     private Board board;
 
     public ChessEngine() {
-        board = new Board();
+        this.board = new Board();
+    }
+    
+    public ChessEngine(Board customBoard) {
+    	this.board = customBoard;
     }
 
     public Board getBoard() {

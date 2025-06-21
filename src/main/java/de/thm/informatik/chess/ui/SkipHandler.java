@@ -1,10 +1,11 @@
-package de.thm.informatik.chess.domain;
+package de.thm.informatik.chess.ui;
 
 import java.util.List;
 
 import com.github.bhlangonijr.chesslib.move.Move;
 
-import de.thm.informatik.chess.ui.ChessPanel;
+import de.thm.informatik.chess.domain.ChessEngine;
+import de.thm.informatik.chess.domain.ClockHandler;
 
 public class SkipHandler {
     private final ChessEngine engine;

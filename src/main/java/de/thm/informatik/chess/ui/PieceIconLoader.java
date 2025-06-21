@@ -1,13 +1,13 @@
-package de.thm.informatik.chess.util;
+package de.thm.informatik.chess.ui;
 
 import java.awt.Image;
 
 import javax.swing.ImageIcon;
 
-public class IconLoader {
+public class PieceIconLoader {
 
     public static ImageIcon loadIcon(String path, int width, int height) {
-        ImageIcon icon = new ImageIcon(IconLoader.class.getResource(path));
+        ImageIcon icon = new ImageIcon(PieceIconLoader.class.getResource(path));
         Image scaledImage = icon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
         return new ImageIcon(scaledImage);
     }
