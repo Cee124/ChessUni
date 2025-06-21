@@ -10,6 +10,8 @@ import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,6 +35,7 @@ import de.thm.informatik.chess.domain.ChessEngine;
 import de.thm.informatik.chess.domain.ClockHandler;
 import de.thm.informatik.chess.domain.GameState;
 import de.thm.informatik.chess.domain.OpeningDetection;
+import de.thm.informatik.chess.domain.PGNHandling;
 import de.thm.informatik.chess.domain.ShowMoveOption;
 import de.thm.informatik.chess.domain.UciParser;
 import de.thm.informatik.chess.util.PieceImageLoader;
@@ -52,6 +55,8 @@ public class ChessPanel extends JPanel {
 	private final JButton pauseButton;
 	private final JButton quicksaveButton;
 	private final JButton quickloadButton;
+    private final JButton loadPGNButton;
+    private final JButton savePGNButton;
 
 	private int currentMoveIndex;
 
@@ -103,6 +108,8 @@ public class ChessPanel extends JPanel {
 		pauseButton = new JButton(IconLoader.PAUSE_ICON);
 		quicksaveButton = new JButton(IconLoader.QUICKSAVE_ICON);
 		quickloadButton = new JButton(IconLoader.QUICKLOAD_ICON);
+		loadPGNButton = new JButton("PGN laden");
+		savePGNButton = new JButton("PGN speichern");
 
 		// Buttons dem Panel hinzufügen
 		add(forwardButton);
@@ -111,6 +118,8 @@ public class ChessPanel extends JPanel {
 		add(pauseButton);
 		add(quicksaveButton);
 		add(quickloadButton);
+		add(loadPGNButton);
+		add(savePGNButton);
 
 		// Button Logik
 		forwardButton.addActionListener(e -> fastForwardMove());
@@ -125,6 +134,40 @@ public class ChessPanel extends JPanel {
 		quickloadButton.addActionListener(e -> {
 			quickload();
 		});
+		
+		//Laden eines Spiels
+        loadPGNButton.addActionListener(e -> {
+            javax.swing.JFileChooser fileChooser = new javax.swing.JFileChooser();
+            fileChooser.setDialogTitle("PGN-Datei laden");
+
+            int userSelection = fileChooser.showOpenDialog(this);
+
+            if (userSelection == javax.swing.JFileChooser.APPROVE_OPTION) {
+                java.io.File fileToLoad = fileChooser.getSelectedFile();
+                String filePath = fileToLoad.getAbsolutePath();
+                
+                PGNHandling.loadGame(filePath, engine);
+                currentMoveIndex = moveHistory.size();
+                handler.pauseClocks();           // Uhren anhalten
+                handler.setWhiteRemaining(0);    // Zeit auf 0 setzen (optional)
+                handler.setBlackRemaining(0);
+
+
+                repaint();
+            }
+        });
+
+
+        //Speichern eines Spiels
+        savePGNButton.addActionListener(e -> {
+        	//für den aktuellen Zeitpunkt im Dateinamen
+        	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
+        	String timestamp = LocalDateTime.now().format(formatter);
+        	String filePath = "games/game_" + timestamp + ".pgn";
+        	
+            PGNHandling pgnHandler = new PGNHandling(filePath);
+            pgnHandler.saveGame(ChessPanel.getMoveHistory());
+        });
 
 		addMouseListener(new MouseAdapter() {
 			@Override
@@ -286,6 +329,8 @@ public class ChessPanel extends JPanel {
 		forwardButton.setBounds(forwardButtonX, buttonY, 30, 30);
 		quicksaveButton.setBounds(centerInStats - 30 - 20, buttonY, 30, 30);
 		quickloadButton.setBounds(centerInStats + 60 + 40, buttonY, 30, 30);
+		loadPGNButton.setBounds(1250, 500, 150, 30);
+        savePGNButton.setBounds(1250, 540, 150, 30);
 
 	}
 
@@ -605,6 +650,10 @@ public class ChessPanel extends JPanel {
 		repaint();
 
 		logger.info("Quickload durchgefuehrt.");
+	}
+	
+	public void setCurrentMoveIndex(int currentMoveIndex) {
+		this.currentMoveIndex = currentMoveIndex;
 	}
 
 }
