@@ -36,7 +36,9 @@ public class InputWindow extends JPanel {
     private boolean setupSelected = false;
 
     private final JButton enter;
-
+    private final JLabel toggleMoveOptionsText;
+    private final JButton toggleMoveOptionsBox;
+    private boolean moveOptionsSelected = false;
     private int timeType;
 
     private ChessPanel panel;
@@ -44,7 +46,7 @@ public class InputWindow extends JPanel {
     private ClockHandler handler;
     private Board customBoard;
 
-    public InputWindow() throws IOException{
+    public InputWindow() throws IOException {
         this.handler = new ClockHandler();
         this.panel = new ChessPanel(handler);
 
@@ -58,6 +60,9 @@ public class InputWindow extends JPanel {
         rewindText = new JLabel("Rewind? ");
         rewindBox = new JButton(PieceIconLoader.EMPTY_ICON);
         setupButton = new JButton("Setup Custom Position");
+        toggleMoveOptionsText = new JLabel("Show Move Options? ");
+        toggleMoveOptionsBox = new JButton(IconLoader.EMPTY_ICON);
+
         enter = new JButton("Enter");
 
         add(modus3);
@@ -67,10 +72,12 @@ public class InputWindow extends JPanel {
         add(blackKing);
         add(rewindText);
         add(rewindBox);
+        add(toggleMoveOptionsText);
+        add(toggleMoveOptionsBox);
         add(enter);
         add(setupButton);
 
-        //Default value für Timer
+        // Default value für Timer
         timeType = 5;
 
         modus3.addActionListener(e -> {
@@ -87,11 +94,14 @@ public class InputWindow extends JPanel {
 
         rewindBox.addActionListener(e -> {
             rewindSelected = !rewindSelected;
-            if(rewindSelected){
-                rewindBox.setIcon(PieceIconLoader.TICKED_ICON);
+
+            if (rewindSelected) {
+                rewindBox.setIcon(IconLoader.TICKED_ICON);
                 panel.setRewind(true);
-            }else{
-                rewindBox.setIcon(PieceIconLoader.EMPTY_ICON);
+
+            } else {
+                rewindBox.setIcon(IconLoader.EMPTY_ICON);
+
                 panel.setRewind(false);
             }
         });
@@ -104,7 +114,8 @@ public class InputWindow extends JPanel {
             SetupPositionPanel setupPanel = new SetupPositionPanel(framePanel, customBoard -> {
                 this.customBoard = customBoard;
                 panel.setCustomBoard(customBoard);
-                panel.getEngine().setBoard(customBoard);
+//                ChessEngine engine = panel.getEngine();
+//                engine.setBoard(customBoard);
                 
             });
 
@@ -121,9 +132,19 @@ public class InputWindow extends JPanel {
             
         });
 
+        toggleMoveOptionsBox.addActionListener(e -> {
+            moveOptionsSelected = !moveOptionsSelected;
+            if (moveOptionsSelected) {
+                toggleMoveOptionsBox.setIcon(IconLoader.TICKED_ICON);
+                panel.setShowMoveOptions(true);
+            } else {
+                toggleMoveOptionsBox.setIcon(IconLoader.EMPTY_ICON);
+                panel.setShowMoveOptions(false);
+            }
+
+        });
 
 
-        
         enter.addActionListener(e -> {
         	
         	if (setupSelected && customBoard != null) {
@@ -149,7 +170,7 @@ public class InputWindow extends JPanel {
     }
 
     @Override
-    public void doLayout(){
+    public void doLayout() {
         super.doLayout();
 
         int panelWidth = getWidth();
@@ -174,10 +195,13 @@ public class InputWindow extends JPanel {
         enter.setBounds(0, panelHeight - 40, panelWidth, 40);
         rewindText.setBounds(centerX + 15, 115, 100, 20);
         rewindBox.setBounds(centerX + 25, 150, 30, 30);
+
+        toggleMoveOptionsText.setBounds(centerX - 10, 190, 160, 20);
+        toggleMoveOptionsBox.setBounds(centerX + 25, 225, 30, 30);
     }
 
     @Override
-    public void paintComponent(Graphics g){
+    public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
         Graphics2D g2 = (Graphics2D) g.create();

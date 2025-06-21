@@ -10,6 +10,7 @@ import com.github.bhlangonijr.chesslib.Piece;
 import com.github.bhlangonijr.chesslib.Square;
 import com.github.bhlangonijr.chesslib.*;
 import de.thm.informatik.chess.domain.ChessEngine;
+import de.thm.informatik.chess.util.PieceImageLoader;
 
 import java.util.EnumMap;
 
@@ -167,7 +168,6 @@ public class SetupPositionPanel extends JPanel {
 				board.setPiece(selectedPiece, sq);
 				repaint();
 			}
-
 		}
 	}
 

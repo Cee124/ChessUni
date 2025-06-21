@@ -1,5 +1,7 @@
 package de.thm.informatik.chess.ui;
 
+import static com.github.bhlangonijr.chesslib.Side.WHITE;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
@@ -28,7 +30,6 @@ import org.apache.logging.log4j.Logger;
 import com.github.bhlangonijr.chesslib.Board;
 import com.github.bhlangonijr.chesslib.Piece;
 import com.github.bhlangonijr.chesslib.Side;
-import static com.github.bhlangonijr.chesslib.Side.WHITE;
 import com.github.bhlangonijr.chesslib.Square;
 import com.github.bhlangonijr.chesslib.move.Move;
 
@@ -36,7 +37,7 @@ import de.thm.informatik.chess.domain.ChessEngine;
 import de.thm.informatik.chess.domain.ClockHandler;
 import de.thm.informatik.chess.domain.GameState;
 import de.thm.informatik.chess.domain.OpeningDetection;
-
+import de.thm.informatik.chess.domain.PGNHandling;
 import de.thm.informatik.chess.domain.ShowMoveOption;
 import de.thm.informatik.chess.domain.UciParser;
 import de.thm.informatik.chess.util.PieceImageLoader;
@@ -69,6 +70,7 @@ public class ChessPanel extends JPanel {
 
 	private boolean rewindSelectedPanel = false;
 	private boolean color = true;
+	private boolean isCustomBoard = false;
 
 	private GameState quickSaveState = null;
 
@@ -375,7 +377,12 @@ public class ChessPanel extends JPanel {
 		// Initialisierung um Openings darstellen zu können
 		List<Move> currentMoves = getMoveHistory();
 		String currentUciMoves = convertMoveListToUci(currentMoves);
-		String sanAnnotated = UciParser.convertUciToAnnotatedMoves(currentUciMoves);
+		
+		String sanAnnotated = "";
+		
+		if (!this.isCustomBoard) {
+			sanAnnotated =  UciParser.convertUciToAnnotatedMoves(currentUciMoves);
+		} 
 		// Variablenzuweisung um letzte erkannte Eröffnung zu speichern
 		String openingText = lastDetectedOpening;
 
@@ -384,7 +391,7 @@ public class ChessPanel extends JPanel {
 			// Key und Value der Map in extra Variablen speichern
 			String openingSequence = entry.getKey();
 			String openingName = entry.getValue();
-
+			
 			// Wenn aktuelle Zugabfolge mit Opening übereinstimmt dann break und der
 			// openingText wird auf den openingName gesetzt
 			if (sanAnnotated.equals(openingSequence)) {
@@ -661,6 +668,8 @@ public class ChessPanel extends JPanel {
 
 	public void setCustomBoard(Board customBoard) {
 		engine.setBoard(customBoard);
+		setBoard(customBoard);
+		isCustomBoard = true;
 	    repaint();
 		
 	}
@@ -677,7 +686,5 @@ public class ChessPanel extends JPanel {
 		
 		return engine;
 	}
-
-
 
 }
