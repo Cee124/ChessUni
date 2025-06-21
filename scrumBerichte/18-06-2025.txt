@@ -19,8 +19,8 @@ Chris:
 Ruwen:
 
 - Was habe ich letzte Woche gemacht?
--->
+--> Verbesserte implementierung der Funktionen für PGNHandling und Custom Stellungen + Neuen UCItoSAN converter
 - Was plane ich diese Woche zu tun?
--->
+--> CustomPositions fixen und JUnit tests
 - Auf welche (größeren) Probleme bin ich gestoßen?
--->
+--> Bestimmung gültiger Züge bei CustomPositions führt zu nullPointerException weil PieceType = null
