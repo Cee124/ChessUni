@@ -14,8 +14,6 @@ import javax.swing.JPanel;
 
 import com.github.bhlangonijr.chesslib.Board;
 
-import de.thm.informatik.chess.domain.ClockHandler;
-
 public class InputWindow extends JPanel {
 
     private final JButton modus3;

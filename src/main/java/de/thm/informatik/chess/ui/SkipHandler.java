@@ -5,7 +5,6 @@ import java.util.List;
 import com.github.bhlangonijr.chesslib.move.Move;
 
 import de.thm.informatik.chess.domain.ChessEngine;
-import de.thm.informatik.chess.domain.ClockHandler;
 
 public class SkipHandler {
     private final ChessEngine engine;

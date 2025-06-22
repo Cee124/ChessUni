@@ -32,10 +32,10 @@ import com.github.bhlangonijr.chesslib.Square;
 import com.github.bhlangonijr.chesslib.move.Move;
 
 import de.thm.informatik.chess.domain.ChessEngine;
-import de.thm.informatik.chess.domain.ClockHandler;
 import de.thm.informatik.chess.domain.GameState;
 import de.thm.informatik.chess.domain.QuickHandler;
-import de.thm.informatik.chess.domain.ShowMoveOption;
+
+import de.thm.informatik.chess.domain.ShowMoveOptions;
 import de.thm.informatik.chess.service.OpeningDetection;
 import de.thm.informatik.chess.service.PGNHandling;
 import de.thm.informatik.chess.util.UciParser;
@@ -80,7 +80,7 @@ public class ChessPanel extends JPanel {
 	private List<Piece> whiteFallenPieces = new ArrayList<>();
 	private List<Piece> blackFallenPieces = new ArrayList<>();
 
-	private ShowMoveOption moveOption;
+	private ShowMoveOptions moveOption;
 	private List<Square> highlightedSquares = new ArrayList<>();
 	private boolean isCustomBoard = false;
 
@@ -115,7 +115,7 @@ public class ChessPanel extends JPanel {
 
 		openingMap = detector.loadOpenings("/Openings/eco_openings.html");
 
-		moveOption = new ShowMoveOption(engine);
+		moveOption = new ShowMoveOptions(engine);
 
 		// Um Objekte individuell anordnen zu können
 		setLayout(null);

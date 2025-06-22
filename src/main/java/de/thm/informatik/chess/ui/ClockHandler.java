@@ -1,4 +1,4 @@
-package de.thm.informatik.chess.domain;
+package de.thm.informatik.chess.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -6,9 +6,10 @@ import java.awt.event.ActionListener;
 import javax.swing.Timer;
 
 import com.github.bhlangonijr.chesslib.Side;
-import static com.github.bhlangonijr.chesslib.Side.WHITE;
 
-import de.thm.informatik.chess.ui.ChessPanel;
+import de.thm.informatik.chess.domain.ChessEngine;
+
+import static com.github.bhlangonijr.chesslib.Side.WHITE;
 
 public class ClockHandler {
 

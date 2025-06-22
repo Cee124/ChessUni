@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import com.github.bhlangonijr.chesslib.Piece;
 import com.github.bhlangonijr.chesslib.move.Move;
 
+import de.thm.informatik.chess.ui.ClockHandler;
 import de.thm.informatik.chess.ui.FallenPiecesHandler;
 
 public class QuickHandler {

@@ -12,9 +12,9 @@ import com.github.bhlangonijr.chesslib.Side;
 import com.github.bhlangonijr.chesslib.move.Move;
 
 import de.thm.informatik.chess.domain.ChessEngine;
-import de.thm.informatik.chess.domain.ClockHandler;
 import de.thm.informatik.chess.domain.GameState;
 import de.thm.informatik.chess.domain.QuickHandler;
+import de.thm.informatik.chess.ui.ClockHandler;
 import de.thm.informatik.chess.ui.FallenPiecesHandler;
 
 public class TestQuickHandler {
