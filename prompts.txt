@@ -553,3 +553,7 @@ Kurz erklärt:
     frame.setSize(...) und frame.setLocation(0, 0) setzen das Fenster auf volle Größe, oben links beginnend.
 
     Kein setUndecorated, kein GraphicsDevice, kein echter exklusiver Modus – nur einfacher, sauberer Vollbild-Look.
+
+12. Ich entwickle eine GameState-Klasse für ein Schachprogramm, die den kompletten Spielzustand speichert – Brettposition, Zugseite und geschlagene Figuren. 
+Ich möchte Tests schreiben, die prüfen, ob der Spielzustand nach einem Zug korrekt gespeichert wird (also z. B. Figuren an den richtigen Positionen stehen und die Zugseite stimmt). 
+Außerdem soll getestet werden, dass die gefallenen Figuren-Listen im GameState unabhängig von den ursprünglich übergebenen Listen sind. Wie kann ich solche Tests gut formulieren?
