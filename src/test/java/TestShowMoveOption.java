@@ -8,17 +8,17 @@ import org.junit.jupiter.api.Test;
 
 import com.github.bhlangonijr.chesslib.Square;
 import de.thm.informatik.chess.domain.ChessEngine;
-import de.thm.informatik.chess.domain.ShowMoveOptions;
+import de.thm.informatik.chess.domain.ShowMoveOption;
 
 public class TestShowMoveOption {
 
     private ChessEngine engine;
-    private ShowMoveOptions showMoveOptions;
+    private ShowMoveOption showMoveOption;
 
     @BeforeEach
     void setup() {
         this.engine = new ChessEngine();
-        this.showMoveOptions = new ShowMoveOptions(engine);
+        this.showMoveOption = new ShowMoveOption(engine);
 
     }
 
@@ -26,7 +26,7 @@ public class TestShowMoveOption {
     void testGetLegalTargetSquares_WhiteKnight() {
     Square whiteKnight = Square.B1;
     List<Square> expectedTargetSquaresWhiteKnight = Arrays.asList(Square.A3, Square.C3);
-    List<Square> actualTargetSquaresWhiteKnight = showMoveOptions.getLegalTargetSquares(whiteKnight);
+    List<Square> actualTargetSquaresWhiteKnight = showMoveOption.getLegalTargetSquares(whiteKnight);
     //Die Liste erstellt durch die Methode enthält soll am Anfang genau die Werte enthalten
     assertTrue(actualTargetSquaresWhiteKnight.containsAll(expectedTargetSquaresWhiteKnight));
     //Die Liste hat nur die Ziele, die sie auch haben soll
@@ -37,7 +37,7 @@ public class TestShowMoveOption {
     void testGetLegalTargetSquares_WhitePawn() {
     Square whitePawn = Square.E2;
     List<Square> expectedTargetSquaresWhitePawn = Arrays.asList(Square.E3, Square.E4);
-    List<Square> actualTargetSquaresWhitePawn = showMoveOptions.getLegalTargetSquares(whitePawn);
+    List<Square> actualTargetSquaresWhitePawn = showMoveOption.getLegalTargetSquares(whitePawn);
     
     assertTrue(actualTargetSquaresWhitePawn.containsAll(expectedTargetSquaresWhitePawn));
     assertEquals(expectedTargetSquaresWhitePawn.size(), actualTargetSquaresWhitePawn.size());
@@ -48,7 +48,7 @@ public class TestShowMoveOption {
 
     Square whiteQueen = Square.D1;
    
-    List<Square> actualTargetSquaresWhiteQueen = showMoveOptions.getLegalTargetSquares(whiteQueen);
+    List<Square> actualTargetSquaresWhiteQueen = showMoveOption.getLegalTargetSquares(whiteQueen);
     //Liste ist am Anfang leer, da die weiße Dame sich nicht bewegen kann
     assertTrue(actualTargetSquaresWhiteQueen.isEmpty());
     }
@@ -56,7 +56,7 @@ public class TestShowMoveOption {
     @Test 
     void testGetLegalTargetSquares_BlackKnight() {
         Square blackKnight = Square.B8;
-        List<Square> actualTargetSquaresBlackKnight = showMoveOptions.getLegalTargetSquares(blackKnight);
+        List<Square> actualTargetSquaresBlackKnight = showMoveOption.getLegalTargetSquares(blackKnight);
         //Liste ist leer, da weiß beginnt und schwarz keinen legalen Zug machen kann
         assertTrue(actualTargetSquaresBlackKnight.isEmpty());
 
