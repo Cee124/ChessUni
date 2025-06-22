@@ -11,7 +11,8 @@ import com.github.bhlangonijr.chesslib.move.Move;
 import de.thm.informatik.chess.ui.FallenPiecesHandler;
 
 public class QuickHandler {
-     private static final Logger logger = LogManager.getLogger(QuickHandler.class);
+    
+    private static final Logger logger = LogManager.getLogger(QuickHandler.class);
     
     private GameState quickSaveState = null;
     private ChessEngine engine;

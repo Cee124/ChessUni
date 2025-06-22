@@ -59,7 +59,9 @@ public class ClockHandler {
             blackTimer.stop();
             blackRunning = false;
         }
-        panel.repaint();
+        if(panel != null){
+            panel.repaint();
+        }
     }
 
     //Methode um Uhren hinzuzufügen
