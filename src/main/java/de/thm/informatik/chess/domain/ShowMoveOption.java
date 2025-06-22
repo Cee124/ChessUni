@@ -6,11 +6,11 @@ import java.util.List;
 import com.github.bhlangonijr.chesslib.Square;
 import com.github.bhlangonijr.chesslib.move.Move;
 
-public class ShowMoveOptions {
+public class ShowMoveOption {
     
     private ChessEngine engine;
 
-    public ShowMoveOptions(ChessEngine engine) {
+    public ShowMoveOption(ChessEngine engine) {
         this.engine = engine;
     }
 
