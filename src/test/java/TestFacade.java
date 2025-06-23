@@ -61,7 +61,7 @@ public class TestFacade {
 
     @Test
     public void testMakeIllegalMove() {
-    Move move = new Move(Square.E2, Square.E5); // Kein legaler Zug
+    Move move = new Move(Square.E2, Square.E5); 
     assertFalse(facade.makeMove(move));
     }
 
