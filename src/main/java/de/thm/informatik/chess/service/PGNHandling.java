@@ -20,7 +20,7 @@ import de.thm.informatik.chess.util.UciToSAN;
 public class PGNHandling {
 
     private final String filePath;
-
+    
     private static final Logger logger = LogManager.getLogger(ChessPanel.class);
 
     public PGNHandling(String filePath) {

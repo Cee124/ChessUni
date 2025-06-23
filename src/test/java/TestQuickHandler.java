@@ -12,6 +12,7 @@ import com.github.bhlangonijr.chesslib.Side;
 import com.github.bhlangonijr.chesslib.move.Move;
 
 import de.thm.informatik.chess.domain.ChessEngine;
+import de.thm.informatik.chess.domain.Facade;
 import de.thm.informatik.chess.domain.GameState;
 import de.thm.informatik.chess.domain.QuickHandler;
 import de.thm.informatik.chess.ui.ClockHandler;
@@ -25,7 +26,7 @@ public class TestQuickHandler {
     private List<Piece> blackFallen;
     private List<Move> moveHistory;
     private QuickHandler handlerQ;
-
+    private Facade facade;
     @BeforeEach
     void setup(){
         engine = new ChessEngine();
@@ -34,7 +35,7 @@ public class TestQuickHandler {
         blackFallen = new ArrayList<>(List.of(Piece.BLACK_QUEEN, Piece.BLACK_KNIGHT));
         moveHistory = new ArrayList<>();
 
-        handlerFP = new FallenPiecesHandler(whiteFallen, blackFallen, 0, true);
+        handlerFP = new FallenPiecesHandler(whiteFallen, blackFallen, 0, true, facade);
 
         engine.getBoard().loadFromFen("rn1qkbnr/pp3ppp/2p5/3pp3/4P3/2N2N2/PPP2PPP/R1BQKB1R w KQkq - 0 1");
 

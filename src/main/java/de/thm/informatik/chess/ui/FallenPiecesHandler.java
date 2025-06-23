@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.github.bhlangonijr.chesslib.Piece;
 
+import de.thm.informatik.chess.domain.Facade;
 import de.thm.informatik.chess.util.PieceImageLoader;
 
 public class FallenPiecesHandler {
@@ -13,12 +14,13 @@ public class FallenPiecesHandler {
     private List<Piece> blackFallenPieces;
     private int squareSize;
     private boolean color;
-
-    public FallenPiecesHandler(List<Piece> whiteFallenPieces, List<Piece> blackFallenPieces, int squareSize, boolean color) {
+	private Facade facade; 
+    public FallenPiecesHandler(List<Piece> whiteFallenPieces, List<Piece> blackFallenPieces, int squareSize, boolean color, Facade facade) {
         this.whiteFallenPieces = whiteFallenPieces;
         this.blackFallenPieces = blackFallenPieces;
         this.squareSize = squareSize;
         this.color = color;
+		this.facade = facade;
     }
 
     public void drawFallenPieces(Graphics g) {
@@ -60,7 +62,7 @@ public class FallenPiecesHandler {
 		int countBlack = 0;
 		for (Piece p : topPieces) {
 			countBlack++;
-			Image imgP = PieceImageLoader.getImage(p);
+			Image imgP = facade.getImage(p);
 			if (imgP != null) {
 				g.drawImage(imgP, xPieceBlack, yPieceBlack, 20, 20, null);
 			}

@@ -7,15 +7,16 @@ import javax.swing.Timer;
 
 import com.github.bhlangonijr.chesslib.Side;
 
-import de.thm.informatik.chess.domain.ChessEngine;
+
+import de.thm.informatik.chess.domain.Facade;
 
 import static com.github.bhlangonijr.chesslib.Side.WHITE;
 
 public class ClockHandler {
 
     private ChessPanel panel;
-
-    private ChessEngine engine = new ChessEngine();
+    private Facade facade; 
+    
 
     private Timer whiteTimer;
     private Timer blackTimer;
@@ -34,8 +35,8 @@ public class ClockHandler {
         this.panel = panel;
     }
 
-    public void setEngine(ChessEngine engine){
-        this.engine = engine;
+    public void setFacade(Facade facade) {
+        this.facade = facade;
     }
 
     public void setColor(boolean isWhite){
@@ -128,7 +129,7 @@ public class ClockHandler {
             }
         }else {
             //Wenn bereits Züge gemacht wurden, starte die Uhr für die aktuelle Seite
-            Side sideToMove = engine.getBoard().getSideToMove();
+            Side sideToMove = facade.getBoard().getSideToMove();
             if (sideToMove == WHITE) {
                 if(color){
                     startWhiteClock();
@@ -174,7 +175,7 @@ public class ClockHandler {
 
     public void updateClocks(){
         pauseClocks();
-        Side currentSide = engine.getBoard().getSideToMove();
+        Side currentSide = facade.getBoard().getSideToMove();
         if (panel.color) {
             if (currentSide == Side.WHITE) {
                 startWhiteClock();
