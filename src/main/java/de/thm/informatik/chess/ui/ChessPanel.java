@@ -168,7 +168,6 @@ public class ChessPanel extends JPanel {
                 handlerC.setWhiteRemaining(0);    
                 handlerC.setBlackRemaining(0);
 
-<<<<<<< HEAD
 				PGNHandling.loadGame(filePath, facade);
 				currentMoveIndex = moveHistory.size();
 				handlerC.pauseClocks(); // Uhren anhalten
@@ -176,13 +175,6 @@ public class ChessPanel extends JPanel {
 				handlerC.setBlackRemaining(0);
 			}});
         savePGNButton.addActionListener(_ -> {
-=======
-                repaint();
-            }
-        });
-
-        savePGNButton.addActionListener(e -> {
->>>>>>> bb933aa07adcd9664e75ec87cb4753f285ac38d9
         	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
         	String timestamp = LocalDateTime.now().format(formatter);
         	String filePath = "games/game_" + timestamp + ".pgn";
