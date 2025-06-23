@@ -1,4 +1,4 @@
-package de.thm.informatik.chess.domain;
+package de.thm.informatik.chess.service;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,9 +10,6 @@ import java.util.Map;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-
 
 public class OpeningDetection {
 

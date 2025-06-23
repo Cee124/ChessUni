@@ -1,4 +1,4 @@
-package de.thm.informatik.chess.domain;
+package de.thm.informatik.chess.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -6,15 +6,17 @@ import java.awt.event.ActionListener;
 import javax.swing.Timer;
 
 import com.github.bhlangonijr.chesslib.Side;
-import static com.github.bhlangonijr.chesslib.Side.WHITE;
 
-import de.thm.informatik.chess.ui.ChessPanel;
+
+import de.thm.informatik.chess.domain.Facade;
+
+import static com.github.bhlangonijr.chesslib.Side.WHITE;
 
 public class ClockHandler {
 
     private ChessPanel panel;
-
-    private ChessEngine engine = new ChessEngine();
+    private Facade facade; 
+    
 
     private Timer whiteTimer;
     private Timer blackTimer;
@@ -33,8 +35,8 @@ public class ClockHandler {
         this.panel = panel;
     }
 
-    public void setEngine(ChessEngine engine){
-        this.engine = engine;
+    public void setFacade(Facade facade) {
+        this.facade = facade;
     }
 
     public void setColor(boolean isWhite){
@@ -59,7 +61,9 @@ public class ClockHandler {
             blackTimer.stop();
             blackRunning = false;
         }
-        panel.repaint();
+        if(panel != null){
+            panel.repaint();
+        }
     }
 
     //Methode um Uhren hinzuzufügen
@@ -117,7 +121,7 @@ public class ClockHandler {
         //Stoppe beide Uhren
         pauseClocks();
         
-        if (ChessPanel.getMoveHistory().isEmpty()) {
+        if (facade.getMoveHistory().isEmpty()) {
             if(color){
                 startWhiteClock();
             }else{
@@ -125,7 +129,7 @@ public class ClockHandler {
             }
         }else {
             //Wenn bereits Züge gemacht wurden, starte die Uhr für die aktuelle Seite
-            Side sideToMove = engine.getBoard().getSideToMove();
+            Side sideToMove = facade.getBoard().getSideToMove();
             if (sideToMove == WHITE) {
                 if(color){
                     startWhiteClock();
@@ -167,6 +171,25 @@ public class ClockHandler {
         if(blackTimer != null){
             blackTimer.start();
         }
+    }
+
+    public void updateClocks(){
+        pauseClocks();
+        Side currentSide = facade.getBoard().getSideToMove();
+        if (panel.color) {
+            if (currentSide == Side.WHITE) {
+                startWhiteClock();
+            } else {
+                startBlackClock();
+            }
+        } else {
+            if (currentSide == Side.WHITE) {
+                startBlackClock();
+            } else {
+                startWhiteClock();
+            }
+        }
+            
     }
 
     public long getWhiteRemaining() {
