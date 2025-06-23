@@ -26,6 +26,7 @@ public class Facade {
     private OpeningDetection openingDetection;
     private Map<String, String> openingsMap;
     private List<Move> moveHistory;
+
     public Facade(ClockHandler clockHandler,
             List<Piece> whiteFallenPieces,
             List<Piece> blackFallenPieces,
@@ -39,7 +40,6 @@ public class Facade {
                 currentMoveIndex, moveHistory,
                 fallenPiecesHandler);
         this.moveOption = new ShowMoveOption(engine);
-        
 
         this.openingDetection = new OpeningDetection();
         this.openingsMap = openingDetection.loadOpenings("/Openings/eco_openings.html");
@@ -49,37 +49,45 @@ public class Facade {
         return PieceImageLoader.getImage(piece);
     }
 
-        public ImageIcon getIcon(String iconName) {
+    public ImageIcon getIcon(String iconName) {
         switch (iconName) {
-            case "FORWARD": return PieceIconLoader.FORWARD_ICON;
-            case "REWIND": return PieceIconLoader.REWIND_ICON;
-            case "START": return PieceIconLoader.START_ICON;
-            case "PAUSE": return PieceIconLoader.PAUSE_ICON;
-            case "WHITEKING": return PieceIconLoader.WHITEKING_ICONX;
-            case "BLACKKING": return PieceIconLoader.BLACKKING_ICONX;
-            case "EMPTY": return PieceIconLoader.EMPTY_ICON;
-            case "TICKED": return PieceIconLoader.TICKED_ICON;
-            case "QUICKSAVE": return PieceIconLoader.QUICKSAVE_ICON;
-            case "QUICKLOAD": return PieceIconLoader.QUICKLOAD_ICON;
-            default: return null;
+            case "FORWARD":
+                return PieceIconLoader.FORWARD_ICON;
+            case "REWIND":
+                return PieceIconLoader.REWIND_ICON;
+            case "START":
+                return PieceIconLoader.START_ICON;
+            case "PAUSE":
+                return PieceIconLoader.PAUSE_ICON;
+            case "WHITEKING":
+                return PieceIconLoader.WHITEKING_ICONX;
+            case "BLACKKING":
+                return PieceIconLoader.BLACKKING_ICONX;
+            case "EMPTY":
+                return PieceIconLoader.EMPTY_ICON;
+            case "TICKED":
+                return PieceIconLoader.TICKED_ICON;
+            case "QUICKSAVE":
+                return PieceIconLoader.QUICKSAVE_ICON;
+            case "QUICKLOAD":
+                return PieceIconLoader.QUICKLOAD_ICON;
+            default:
+                return null;
         }
     }
-
 
     public String getOpeningName(String uciSequence) {
         return openingsMap.get(uciSequence);
     }
+
     public Map<String, String> getOpeningsMap() {
         return openingsMap;
     }
 
-    
     public OpeningDetection getOpeningDetection() {
         return openingDetection;
     }
 
-
-    
     public boolean makeMove(Move move) {
         return engine.makeMove(move);
     }
@@ -120,12 +128,10 @@ public class Facade {
         return engine.getMoveHistory();
     }
 
-    
     public List<Square> getLegalTargetSquares(Square from) {
         return moveOption.getLegalTargetSquares(from);
     }
 
-   
     public void quicksave() {
         quickHandler.quicksave();
     }
