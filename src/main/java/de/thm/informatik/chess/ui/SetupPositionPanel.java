@@ -1,29 +1,29 @@
 package de.thm.informatik.chess.ui;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.function.Consumer;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 import com.github.bhlangonijr.chesslib.Board;
 import com.github.bhlangonijr.chesslib.Piece;
 import com.github.bhlangonijr.chesslib.Square;
-import com.github.bhlangonijr.chesslib.*;
-import de.thm.informatik.chess.domain.ChessEngine;
+
 import de.thm.informatik.chess.util.PieceImageLoader;
-
-import java.util.EnumMap;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.EnumMap;
 
 public class SetupPositionPanel extends JPanel {
 
 	private Consumer<Board> onDoneCallback;
 
 	private final int squareSize = 95;
-	private boolean color = true;
+	private final boolean color = true;
 
 	private final Board board;
 	private Piece selectedPiece = Piece.NONE;
@@ -31,19 +31,19 @@ public class SetupPositionPanel extends JPanel {
 	private JFrame parentFrame;
 	private JPanel selectionPanel;
 
-	private JButton doneButton;
-	private JButton whitePawnButton;
-	private JButton whiteRookButton;
-	private JButton whiteBishopButton;
-	private JButton whiteKnightButton;
-	private JButton whiteQueenButton;
-	private JButton whiteKingButton;
-	private JButton blackPawnButton;
-	private JButton blackRookButton;
-	private JButton blackBishopButton;
-	private JButton blackKnightButton;
-	private JButton blackQueenButton;
-	private JButton blackKingButton;
+	private final JButton doneButton;
+	private final JButton whitePawnButton;
+	private final JButton whiteRookButton;
+	private final JButton whiteBishopButton;
+	private final JButton whiteKnightButton;
+	private final JButton whiteQueenButton;
+	private final JButton whiteKingButton;
+	private final JButton blackPawnButton;
+	private final JButton blackRookButton;
+	private final JButton blackBishopButton;
+	private final JButton blackKnightButton;
+	private final JButton blackQueenButton;
+	private final JButton blackKingButton;
 
 	// Konstruktor
 	public SetupPositionPanel(JFrame parentFrame, Consumer<Board> onDoneCallback) {
@@ -89,12 +89,10 @@ public class SetupPositionPanel extends JPanel {
 		int buttonHeight = 30;
 		int spacing = 10;
 
-		int startXWhite = 850;
-		int startXBlack = startXWhite + buttonWidth + spacing;
 		int startY = 50;
 
-		startXWhite = 800;
-		startXBlack = 950;
+		int startXWhite = 800;
+		int startXBlack = 950;
 
 		whitePawnButton.setBounds(startXWhite, startY + 0 * (buttonHeight + spacing), buttonWidth, buttonHeight);
 		whiteRookButton.setBounds(startXWhite, startY + 1 * (buttonHeight + spacing), buttonWidth, buttonHeight);
@@ -114,7 +112,7 @@ public class SetupPositionPanel extends JPanel {
 				buttonHeight);
 
 		// Button Logik
-		doneButton.addActionListener(e -> {
+		doneButton.addActionListener(_ -> {
 			if (onDoneCallback != null) {
 				onDoneCallback.accept(board);
 			}
@@ -124,19 +122,19 @@ public class SetupPositionPanel extends JPanel {
 			}
 		});
 
-		whitePawnButton.addActionListener(e -> selectedPiece = Piece.WHITE_PAWN);
-		whiteRookButton.addActionListener(e -> selectedPiece = Piece.WHITE_ROOK);
-		whiteBishopButton.addActionListener(e -> selectedPiece = Piece.WHITE_BISHOP);
-		whiteKnightButton.addActionListener(e -> selectedPiece = Piece.WHITE_KNIGHT);
-		whiteQueenButton.addActionListener(e -> selectedPiece = Piece.WHITE_QUEEN);
-		whiteKingButton.addActionListener(e -> selectedPiece = Piece.WHITE_KING);
+		whitePawnButton.addActionListener(_ -> selectedPiece = Piece.WHITE_PAWN);
+		whiteRookButton.addActionListener(_ -> selectedPiece = Piece.WHITE_ROOK);
+		whiteBishopButton.addActionListener(_ -> selectedPiece = Piece.WHITE_BISHOP);
+		whiteKnightButton.addActionListener(_ -> selectedPiece = Piece.WHITE_KNIGHT);
+		whiteQueenButton.addActionListener(_ -> selectedPiece = Piece.WHITE_QUEEN);
+		whiteKingButton.addActionListener(_ -> selectedPiece = Piece.WHITE_KING);
 
-		blackPawnButton.addActionListener(e -> selectedPiece = Piece.BLACK_PAWN);
-		blackRookButton.addActionListener(e -> selectedPiece = Piece.BLACK_ROOK);
-		blackBishopButton.addActionListener(e -> selectedPiece = Piece.BLACK_BISHOP);
-		blackKnightButton.addActionListener(e -> selectedPiece = Piece.BLACK_KNIGHT);
-		blackQueenButton.addActionListener(e -> selectedPiece = Piece.BLACK_QUEEN);
-		blackKingButton.addActionListener(e -> selectedPiece = Piece.BLACK_KING);
+		blackPawnButton.addActionListener(_ -> selectedPiece = Piece.BLACK_PAWN);
+		blackRookButton.addActionListener(_ -> selectedPiece = Piece.BLACK_ROOK);
+		blackBishopButton.addActionListener(_ -> selectedPiece = Piece.BLACK_BISHOP);
+		blackKnightButton.addActionListener(_ -> selectedPiece = Piece.BLACK_KNIGHT);
+		blackQueenButton.addActionListener(_ -> selectedPiece = Piece.BLACK_QUEEN);
+		blackKingButton.addActionListener(_ -> selectedPiece = Piece.BLACK_KING);
 
 		addMouseListener(new MouseAdapter() {
 			@Override
@@ -171,10 +169,11 @@ public class SetupPositionPanel extends JPanel {
 		}
 	}
 
+	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 
-		// Rechte Bildschirmhälfte dunkelgrün färben
+		//Rechte Bildschirmhälfte dunkelgrün färben
 		Graphics2D g2 = (Graphics2D) g.create();
 		Color colorRightSide = new Color(180, 180, 180);
 		int panelWidth = getWidth();
@@ -182,9 +181,7 @@ public class SetupPositionPanel extends JPanel {
 		g2.setColor(colorRightSide);
 		g2.fillRect(panelWidth / 2, 0, panelWidth / 2, panelHeight);
 
-		int boardPixelSize = 8 * squareSize;
-
-		// Draw chess board
+		//Draw chess board
 		for (int rank = 0; rank < 8; rank++) {
 			for (int file = 0; file < 8; file++) {
 				int drawRank = color ? 7 - rank : rank;
@@ -199,7 +196,7 @@ public class SetupPositionPanel extends JPanel {
 			}
 		}
 
-		// Figuren zeichnen
+		//Figuren zeichnen
 		for (int rank = 0; rank < 8; rank++) {
 			for (int file = 0; file < 8; file++) {
 				int drawRank = color ? 7 - rank : rank;
@@ -221,5 +218,4 @@ public class SetupPositionPanel extends JPanel {
 	public Board getCustomBoard() {
 		return board;
 	}
-
 }

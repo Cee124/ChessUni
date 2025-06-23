@@ -7,6 +7,7 @@ import javax.swing.JFrame;
 public class MainWindow {
     public static void main(String[] args) throws IOException {
         JFrame frameInput = new JFrame("Input Window");
+    
         InputWindow input = new InputWindow();
         frameInput.setContentPane(input);
 
@@ -16,4 +17,4 @@ public class MainWindow {
         frameInput.setLocationRelativeTo(null);
         frameInput.setVisible(true);
     }
-}
+} 

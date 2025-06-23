@@ -1,22 +1,27 @@
 package de.thm.informatik.chess.domain;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import com.github.bhlangonijr.chesslib.Board;
 import com.github.bhlangonijr.chesslib.Piece;
 import com.github.bhlangonijr.chesslib.Square;
 import com.github.bhlangonijr.chesslib.move.Move;
-import com.github.bhlangonijr.chesslib.Side;
+
 public class ChessEngine {
 
     private Board board;
-
+    private final List<Move> moveHistory = new LinkedList<>();
     public ChessEngine() {
         this.board = new Board();
     }
     
     public ChessEngine(Board customBoard) {
     	this.board = customBoard;
+    }
+
+    public List<Move> getMoveHistory() {
+    return moveHistory;
     }
 
     public Board getBoard() {
@@ -40,7 +45,6 @@ public class ChessEngine {
     }
 
     public boolean isGameOver() {
-
         return board.isMated() || board.isDraw();
     }
     public boolean isCheckmate() {
