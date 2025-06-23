@@ -13,6 +13,7 @@ import com.github.bhlangonijr.chesslib.move.Move;
 import com.github.bhlangonijr.chesslib.pgn.PgnHolder;
 
 import de.thm.informatik.chess.domain.ChessEngine;
+import de.thm.informatik.chess.domain.Facade;
 import de.thm.informatik.chess.ui.ChessPanel;
 import de.thm.informatik.chess.util.UciToSAN;
 
@@ -20,15 +21,17 @@ import de.thm.informatik.chess.util.UciToSAN;
 public class PGNHandling {
 
     private final String filePath;
-    
+    private Facade facade; 
     private static final Logger logger = LogManager.getLogger(ChessPanel.class);
 
-    public PGNHandling(String filePath) {
+    public PGNHandling(String filePath, Facade facade) {
         this.filePath = filePath;
+        this.facade = facade;
     }
 
     public void saveGame(List<Move> moves) {
-        Board board = new Board();
+        
+        
         StringBuilder uciMoves = new StringBuilder();
 
         // UCI-Zugfolge aus den Move-Objekten zusammenbauen
@@ -97,7 +100,7 @@ public class PGNHandling {
 
 
 
-    public static void loadGame(String filePath, ChessEngine engine) {
+    public static void loadGame(String filePath, Facade facade) {
         logger.info("Starte Ladevorgang der PGN-Datei: {}", filePath);
 
         try {
@@ -124,7 +127,7 @@ public class PGNHandling {
             Board board = new Board();
 
             // Leere alte Zughistorie
-            ChessPanel.getMoveHistory().clear();
+            facade.getMoveHistory().clear();
 
             // Iteriere über alle Züge
             for (int i = 0; i < halfMoves.size(); i++) {
@@ -138,11 +141,11 @@ public class PGNHandling {
                 }
 
                 board.doMove(move);
-                ChessPanel.getMoveHistory().add(move); 
+                facade.getMoveHistory().add(move); 
             }
 
             // Setze das fertige Board in die Engine
-            engine.setBoard(board);
+            facade.setBoard(board);
             
             
 

@@ -84,6 +84,10 @@ public class FallenPiecesHandler {
 		}
     }
 
+	public void setFacade(Facade facade) {
+		this.facade = facade;
+	}
+
     public void setColor(boolean color){
         this.color = color;
     }

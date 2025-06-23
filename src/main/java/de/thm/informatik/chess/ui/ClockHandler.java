@@ -121,7 +121,7 @@ public class ClockHandler {
         //Stoppe beide Uhren
         pauseClocks();
         
-        if (ChessPanel.getMoveHistory().isEmpty()) {
+        if (facade.getMoveHistory().isEmpty()) {
             if(color){
                 startWhiteClock();
             }else{

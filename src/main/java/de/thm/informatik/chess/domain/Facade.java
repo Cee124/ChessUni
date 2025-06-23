@@ -13,6 +13,7 @@ import com.github.bhlangonijr.chesslib.Square;
 import com.github.bhlangonijr.chesslib.move.Move;
 
 import de.thm.informatik.chess.service.OpeningDetection;
+import de.thm.informatik.chess.ui.ChessPanel;
 import de.thm.informatik.chess.ui.ClockHandler;
 import de.thm.informatik.chess.ui.FallenPiecesHandler;
 import de.thm.informatik.chess.util.PieceIconLoader;
@@ -25,15 +26,15 @@ public class Facade {
     private ShowMoveOption moveOption;
     private OpeningDetection openingDetection;
     private Map<String, String> openingsMap;
-   
+    private List<Move> moveHistory;
     public Facade(ClockHandler clockHandler,
             List<Piece> whiteFallenPieces,
             List<Piece> blackFallenPieces,
             int currentMoveIndex,
-            List<Move> moveHistory,
             FallenPiecesHandler fallenPiecesHandler) throws IOException {
 
         this.engine = new ChessEngine();
+        moveHistory = engine.getMoveHistory();
         this.quickHandler = new QuickHandler(engine, clockHandler,
                 whiteFallenPieces, blackFallenPieces,
                 currentMoveIndex, moveHistory,
@@ -73,13 +74,13 @@ public class Facade {
         return openingsMap;
     }
 
-    // Getter für OpeningDetection (optional)
+    
     public OpeningDetection getOpeningDetection() {
         return openingDetection;
     }
 
 
-    // === Engine ===
+    
     public boolean makeMove(Move move) {
         return engine.makeMove(move);
     }
@@ -116,12 +117,16 @@ public class Facade {
         return engine.getLegalMoves();
     }
 
-    // === ShowMoveOption ===
+    public List<Move> getMoveHistory() {
+        return engine.getMoveHistory();
+    }
+
+    
     public List<Square> getLegalTargetSquares(Square from) {
         return moveOption.getLegalTargetSquares(from);
     }
 
-    // === QuickHandler ===
+   
     public void quicksave() {
         quickHandler.quicksave();
     }

@@ -1,5 +1,6 @@
 package de.thm.informatik.chess.domain;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import com.github.bhlangonijr.chesslib.Board;
@@ -10,13 +11,17 @@ import com.github.bhlangonijr.chesslib.move.Move;
 public class ChessEngine {
 
     private Board board;
-
+    private final List<Move> moveHistory = new LinkedList<>();
     public ChessEngine() {
         this.board = new Board();
     }
     
     public ChessEngine(Board customBoard) {
     	this.board = customBoard;
+    }
+
+    public List<Move> getMoveHistory() {
+    return moveHistory;
     }
 
     public Board getBoard() {
