@@ -637,5 +637,7 @@ Prompt 20.: Ich programmiere ein Schachspiel in Java und möchte eine Methode sc
 
 Prompt 21.: Ich habe in meinem Java-Schachspiel eine Bauernpromotion implementiert, bei der der Bauer beim Erreichen der letzten Reihe in eine andere Figur umgewandelt wird. Das Problem: Nach der Umwandlung kann ich keine weiteren Züge mehr machen. Ich vermute, dass das am UCIParser liegt, da normale Züge 4 Zeichen haben, Promotion-Züge aber 5 Zeichen (z.B. e7e8q). Bitte hilf mir, meinen Parser so zu verbessern, dass er sowohl 4- als auch 5-stellige Züge zuverlässig verarbeiten kann. Wie kann ich in einer Schleife mehrere UCI-Züge (auch mit Promotion) richtig parsen inklusive Prüfung auf gültige Promotion-Zeichen? 
 
+Prompt 22.: Ich möchte in meinem Schachprogramm mit Chesslib eine Klasse PieceImageLoader erstellen, die alle Figurenbilder einmalig statisch aus meinen Ressourcen lädt und in einer Map<Piece, Image> speichert. Die Bilder liegen im Ressourcenordner /images/ und heißen z.B. wp.png für weißen Bauern, bn.png für schwarzen Springer usw. 
+
 
 
