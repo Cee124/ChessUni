@@ -13,7 +13,6 @@ import com.github.bhlangonijr.chesslib.Square;
 import com.github.bhlangonijr.chesslib.move.Move;
 
 import de.thm.informatik.chess.service.OpeningDetection;
-import de.thm.informatik.chess.ui.ChessPanel;
 import de.thm.informatik.chess.ui.ClockHandler;
 import de.thm.informatik.chess.ui.FallenPiecesHandler;
 import de.thm.informatik.chess.util.PieceIconLoader;
