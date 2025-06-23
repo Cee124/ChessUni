@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,21 +29,23 @@ public class TestQuickHandler {
     private QuickHandler handlerQ;
     private Facade facade;
     @BeforeEach
-    void setup(){
+    void setup() throws IOException{
         engine = new ChessEngine();
         handlerC = new ClockHandler();
         whiteFallen = new ArrayList<>(List.of(Piece.WHITE_BISHOP));
         blackFallen = new ArrayList<>(List.of(Piece.BLACK_QUEEN, Piece.BLACK_KNIGHT));
         moveHistory = new ArrayList<>();
-
+        
         handlerFP = new FallenPiecesHandler(whiteFallen, blackFallen, 0, true, facade);
+        this.facade = new Facade(handlerC, whiteFallen, blackFallen, 0, handlerFP);
+        handlerFP.setFacade(facade);
 
         engine.getBoard().loadFromFen("rn1qkbnr/pp3ppp/2p5/3pp3/4P3/2N2N2/PPP2PPP/R1BQKB1R w KQkq - 0 1");
 
         handlerC.setWhiteRemaining(300_000);
         handlerC.setBlackRemaining(300_000);
 
-        handlerQ = new QuickHandler(engine, handlerC, whiteFallen, blackFallen, 5, moveHistory, handlerFP);
+        handlerQ = new QuickHandler(engine, handlerC, whiteFallen, blackFallen, 5, moveHistory, handlerFP, facade);
     }
 
     @Test

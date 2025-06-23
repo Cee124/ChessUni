@@ -23,11 +23,12 @@ public class QuickHandler {
     private int currentMoveIndex;
     private List<Move> moveHistory;
     private FallenPiecesHandler fallenPiecesHandler;
+    private Facade facade;
 
     public QuickHandler(ChessEngine engine, ClockHandler clockHandler, 
                        List<Piece> whiteFallenPieces, List<Piece> blackFallenPieces,
                        int currentMoveIndex, List<Move> moveHistory,
-                       FallenPiecesHandler fallenPiecesHandler) {
+                       FallenPiecesHandler fallenPiecesHandler, Facade facade) {
         this.engine = engine;
         this.clockHandler = clockHandler;
         this.whiteFallenPieces = whiteFallenPieces;
@@ -35,6 +36,7 @@ public class QuickHandler {
         this.currentMoveIndex = currentMoveIndex;
         this.moveHistory = moveHistory;
         this.fallenPiecesHandler = fallenPiecesHandler;
+        this.facade = facade;
     }
 
     public void quicksave() {
@@ -78,7 +80,7 @@ public class QuickHandler {
         fallenPiecesHandler.setWhiteFallenPieces(whiteFallenPieces);
         fallenPiecesHandler.setBlackFallenPieces(blackFallenPieces);
     
-        clockHandler.startClocks();
+        clockHandler.startClocks(facade);
         logger.info("Quickload durchgefuehrt.");
 }
 

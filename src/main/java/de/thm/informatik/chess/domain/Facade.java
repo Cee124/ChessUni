@@ -38,7 +38,7 @@ public class Facade {
         this.quickHandler = new QuickHandler(engine, clockHandler,
                 whiteFallenPieces, blackFallenPieces,
                 currentMoveIndex, moveHistory,
-                fallenPiecesHandler);
+                fallenPiecesHandler, this);
         this.moveOption = new ShowMoveOption(engine);
 
         this.openingDetection = new OpeningDetection();
