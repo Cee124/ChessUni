@@ -1,2 +1,670 @@
-1. Prompt: 
---> 
+1. Prompt: wie erstellt man einen timer in java swing?
+--> Timer mit javax.swing.Timer (gut für GUIs)
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class SwingTimerBeispiel {
+    public static void main(String[] args) {
+        int delay = 1000; // Millisekunden
+        Timer timer = new Timer(delay, new ActionListener() {
+            int sekunden =   0;
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                sekunden++;
+                System.out.println("Sekunden: " + sekunden);
+                if (sekunden == 5) {
+                    ((Timer)e.getSource()).stop();
+                    System.out.println("Fertig!");
+                }
+            }
+        });
+        timer.start();
+
+        // Verhindert sofortiges Beenden in Konsolenanwendungen:
+        JOptionPane.showMessageDialog(null, "Timer läuft – klicke OK zum Beenden.");
+    }
+}
+Möchtest du z. B. einen Countdown, Stoppuhr, oder einen GUI-Timer mit Start/Stop/Reset? Sag einfach Bescheid, und ich zeig dir genau das passende Beispiel.
+
+2. Prompt: wie kann man in java swing ein objekt verschönern wie in css
+--> In Java Swing kannst du ein Objekt (z. B. ein JButton, JPanel, JLabel usw.) gestalten oder „verschönern“, aber Swing bietet keine direkte Unterstützung für CSS wie in HTML. Stattdessen verwendest du Methoden und Klassen aus dem javax.swing und java.awt Paket, um Stil, Layout und Aussehen zu beeinflussen.
+
+Hier sind einige Techniken, um Swing-Komponenten optisch aufzuwerten – quasi das Pendant zu CSS in Swing:
+1. Farben ändern (wie background-color, color in CSS)
+
+JButton button = new JButton("Klick mich");
+button.setBackground(Color.BLUE);         // Hintergrundfarbe
+button.setForeground(Color.WHITE);        // Schriftfarbe
+
+2. Schriftart und Größe (wie font-family, font-size)
+
+button.setFont(new Font("Arial", Font.BOLD, 16));
+
+3. Rahmen und Padding (wie border, padding)
+
+button.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2)); // Rahmen
+
+// Padding mit leerem Rand innen
+button.setBorder(BorderFactory.createCompoundBorder(
+    BorderFactory.createLineBorder(Color.BLACK, 2),
+    BorderFactory.createEmptyBorder(10, 20, 10, 20)
+));
+
+4. Transparenz und runde Ecken (wie border-radius, opacity)
+
+Für runde Ecken musst du die Komponente oft selbst zeichnen:
+
+JButton roundedButton = new JButton("Rund") {
+    @Override
+    protected void paintComponent(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setColor(getBackground());
+        g2.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
+        super.paintComponent(g);
+        g2.dispose();
+    }
+};
+roundedButton.setContentAreaFilled(false);
+roundedButton.setOpaque(false);
+roundedButton.setBackground(Color.CYAN);
+
+Wenn du willst, kann ich dir ein konkretes Beispiel für eine „hübsche“ Swing-Komponente schreiben. Möchtest du z. B. einen schön gestylten Button
+
+3. Prompt: wie erstellt man in java swing ein viereck?
+--> Um in Java Swing ein Viereck (Rechteck oder Quadrat) zu erstellen, kannst du eine benutzerdefinierte Komponente erstellen, indem du eine Klasse erstellst, die von JPanel erbt, und in dieser Klasse die paintComponent(Graphics g)-Methode überschreibst. Dort kannst du dann mit der Graphics-API das Viereck zeichnen.
+
+Hier ist ein einfaches Beispiel:
+
+import javax.swing.*;
+import java.awt.*;
+
+public class ViereckZeichnen extends JPanel {
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        // Farbe setzen (optional)
+        g.setColor(Color.BLUE);
+
+        // Viereck zeichnen: (x, y, breite, höhe)
+        g.drawRect(50, 50, 100, 100);  // Quadrat
+        // g.drawRect(50, 50, 150, 100);  // Rechteck
+
+        // Optional: gefülltes Viereck
+        // g.fillRect(200, 50, 100, 100);
+    }
+
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Viereck in Swing");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(400, 300);
+        frame.add(new ViereckZeichnen());
+        frame.setVisible(true);
+    }
+}
+
+Erklärung:
+
+    g.drawRect(x, y, breite, höhe): Zeichnet den Rand eines Vierecks.
+
+    g.fillRect(...): Zeichnet ein ausgefülltes Viereck.
+
+    setColor(...): Setzt die Farbe für den nächsten Zeichenbefehl.
+
+Du kannst das Viereck anpassen, indem du die Position und Größe in drawRect() veränderst.
+
+Möchtest du das Viereck z. B. interaktiv machen (verschiebbar, klickbar etc.)?
+
+4. Prompt: das ist die darstellung der openings 1 d4 Nf6 2 c4 g6 und das ist die darstellung meiner aktuellen züge während des spiels
+b2b3g8f6e2e4f6e4f2f3e4g5h2h4h7h6h4g5h6g5 ich möchte diese vergleichen um openings zu erkennen, wie muss ich das format anpassen?
+--> Vollständige Java-Methode (UCI-String → lesbare Züge mit Zugnummern)
+
+import com.github.bhlangonijr.chesslib.*;
+import com.github.bhlangonijr.chesslib.move.Move;
+
+public class ChessMoveParser {
+
+    public static String convertUciToAnnotatedMoves(String uciMoves) {
+        Board board = new Board();
+        StringBuilder sb = new StringBuilder();
+
+        int moveNumber = 1;
+        boolean whiteToMove = true;
+
+        for (int i = 0; i <= uciMoves.length() - 4; i += 4) {
+            String from = uciMoves.substring(i, i + 2).toUpperCase();
+            String to = uciMoves.substring(i + 2, i + 4).toUpperCase();
+
+            Square fromSquare = Square.fromValue(from);
+            Square toSquare = Square.fromValue(to);
+            Move move = new Move(fromSquare, toSquare);
+
+            if (!board.isMoveLegal(move)) {
+                System.out.println("Illegal move: " + from + to);
+                break;
+            }
+
+            if (whiteToMove) {
+                sb.append(moveNumber).append(". ");
+                moveNumber++;
+            }
+
+            // Pseudo-SAN: Bauer = ohne Buchstabe, Figur = Anfangsbuchstabe
+            Piece movingPiece = board.getPiece(fromSquare);
+            String pieceSymbol = getPieceSymbol(movingPiece);
+
+            sb.append(pieceSymbol).append(from.toLowerCase()).append(to.toLowerCase()).append(" ");
+            board.doMove(move);
+            whiteToMove = !whiteToMove;
+        }
+
+        return sb.toString().trim();
+    }
+
+    private static String getPieceSymbol(Piece piece) {
+        switch (piece.getPieceType()) {
+            case KNIGHT: return "N";
+            case BISHOP: return "B";
+            case ROOK: return "R";
+            case QUEEN: return "Q";
+            case KING: return "K";
+            default: return ""; // Pawn
+        }
+    }
+
+    public static void main(String[] args) {
+        String uci = "b2b3g8f6e2e4f6e4f2f3e4g5h2h4h7h6h4g5h6g5";
+        String moves = convertUciToAnnotatedMoves(uci);
+        System.out.println("Züge: " + moves);
+    }
+}
+
+Füge in ChessPanel folgende Methode hinzu (z. B. unterhalb von getMoveHistory()):
+
+private String convertMoveListToUci(List<Move> moves) {
+    StringBuilder sb = new StringBuilder();
+    for (Move move : moves) {
+        sb.append(move.getFrom().value().toLowerCase());
+        sb.append(move.getTo().value().toLowerCase());
+    }
+    return sb.toString();
+}
+
+5. Prompt: die from position soll nicht in den string mit rein package 
+--> Damit die Ausgabe im algebraischen Notationsstil (SAN) ist – ohne die "from"-Position bei Bauernzügen (z. B. e4 statt Pe2e4) und korrekt mit Figurensymbolen für andere Figuren – musst du die Ausgabe-Logik anpassen. Derzeit wird "from.to" für alle Figuren inklusive Bauern verwendet, was nicht dem SAN-Standard entspricht.
+🔧 Änderung: Nur bei Figuren das "from"-Feld anhängen
+
+Ersetze:
+
+sb.append(pieceSymbol).append(from.toLowerCase()).append(to.toLowerCase()).append(" ");
+
+Mit:
+
+if (pieceSymbol.isEmpty()) {
+    // Bauer: nur Zielfeld
+    sb.append(to.toLowerCase()).append(" ");
+} else {
+    // Figuren: Symbol + Zielfeld
+    sb.append(pieceSymbol).append(to.toLowerCase()).append(" ");
+}
+
+6. Prompt: Könnte man die Namen der eröffnungen nicht auch zum key einer hashmap machen und den zug zum value und dann die aktuellen züge mit der eröffnung vergleichen?
+--> HTML parsen und Map aufbauen
+
+Hier der komplette funktionierende Parser, zugeschnitten auf dein HTML:
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+public class EcoHtmlParser {
+
+    public static Map<String, String> parseOpenings(String htmlPath) throws Exception {
+        String html = Files.readString(Paths.get(htmlPath));
+        Document doc = Jsoup.parse(html);
+
+        // Ziel-Map
+        Map<String, String> openingsMap = new LinkedHashMap<>();
+
+        // Gehe durch alle <b> Elemente mit dem ECO-Namen
+        Elements boldElements = doc.select("b");
+
+        for (Element b : boldElements) {
+            String name = b.text(); // z. B. "A04 Reti Opening"
+
+            // Gehe durch die nachfolgenden Siblings, um SAN-Züge zu finden
+            Element current = b.nextElementSibling();
+            while (current != null && current.tagName().equals("br")) {
+                // Hole das tatsächliche Text-Node (direkt nach <br>)
+                if (current.nextSibling() != null) {
+                    String sanLine = current.nextSibling().toString().trim();
+
+                    // Prüfen, ob es wie "1 Nf3" aussieht
+                    if (sanLine.matches("^\\d+\\..*")) {
+                        String uci = convertSanToUci(sanLine);
+                        if (uci != null && !uci.isEmpty()) {
+                            openingsMap.put(uci, name);
+                        }
+                    }
+                }
+                current = current.nextElementSibling();
+            }
+        }
+        return openingsMap;
+    }
+
+    // Dummy-SAN-zu-UCI-Konvertierung – hier brauchst du eine Engine!
+    private static String convertSanToUci(String sanMoves) {
+        // Entferne Zugnummern und splitte in einzelne SAN-Züge
+        String cleaned = sanMoves.replaceAll("\\d+\\.", "").trim();
+        String[] moves = cleaned.split("\\s+");
+
+        // Du brauchst eine echte Umwandlung: SAN -> UCI
+        // Hier nur Dummy: wir machen alles lowercase und hängen es zusammen
+        // z.B. "Nf3 d5" -> "nf3d5"
+        StringBuilder sb = new StringBuilder();
+        for (String move : moves) {
+            sb.append(move.toLowerCase());
+        }
+        return sb.toString();
+    }
+}
+
+7. Prompt: Wie kann ich diese html Datei (...) einlesen?
+--> Was du aus dem HTML lernen solltest:
+
+Die HTML-Struktur ist nicht tabellarisch, sondern:
+
+    Jede Eröffnung beginnt mit einem <B>-Tag:
+    <B>B66 Sicilian, Richter-Rauzer Attack, 7...a6</B>
+
+    Danach folgen die Züge als reiner Text innerhalb eines <BR>-Blocks:
+    1 e4 c5 2 Nf3 d6 3 d4 ...
+
+Die Züge sind in Standard Algebraic Notation (SAN) notiert – nicht in UCI-Notation, die du bisher für deinen Vergleich nutzt.
+Was du jetzt konkret tun musst
+1. HTML richtig parsen (statt tr/td)
+
+Verwende <b>-Elemente, lies ihren Text aus und hole danach den nächsten Textknoten als Zugfolge.
+2. Zugfolge verarbeiten (SAN → Move)
+
+Du musst aus dem SAN-String wie 1 e4 c5 2 Nf3 d6 ... eine Liste von Move-Objekten erzeugen.
+
+Dazu brauchst du ein Dummy-Board und benutzt engine.getLegalMoves() + SAN-Matching (oder eine Bibliothek, die Move.fromSan(...) unterstützt – chesslib bietet das rudimentär mit manuellem Matching).
+🛠 Beispielimplementierung loadOpeningsFromHtml(InputStream in)
+
+public List<Opening> loadOpenings(InputStream inputStream) throws IOException {
+    List<Opening> openings = new ArrayList<>();
+    Document doc = Jsoup.parse(inputStream, "UTF-8", "");
+
+    Elements boldElements = doc.select("b");
+
+    for (Element bold : boldElements) {
+        String headerText = bold.text().trim();
+
+        // Nur Einträge mit ECO-Code (z. B. B66)
+        if (!headerText.matches("^[A-E]\\d{2} .*")) continue;
+
+        String[] parts = headerText.split(" ", 2);
+        if (parts.length < 2) continue;
+
+        String eco = parts[0].trim();
+        String name = parts[1].trim();
+
+        // Zugfolge aus nächstem Textknoten suchen
+        Node next = bold.nextSibling();
+        while (next != null && (next.nodeName().equals("br") || next.toString().trim().isEmpty())) {
+            next = next.nextSibling();
+        }
+
+        if (next != null && next.nodeName().equals("#text")) {
+            String moveText = next.toString().trim();
+            if (!moveText.isEmpty()) {
+                openings.add(new Opening(eco, name, moveText));
+            }
+        }
+    }
+
+    return openings;
+}
+
+8. Prompt: wie baut man in einem chess programm die eröffnungserkennung ein mithilfe folgender webadresse? https://www3.diism.unisi.it/~addabbo/ECO_aperture_scacchi.html
+--> Verwende jsoup, um HTML zu parsen
+
+Füge jsoup zu deinem Projekt hinzu, z. B. über Maven:
+
+<dependency>
+    <groupId>org.jsoup</groupId>
+    <artifactId>jsoup</artifactId>
+    <version>1.17.2</version>
+</dependency>
+
+Code: Parser + Erkennung
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+public class OpeningRecognizer {
+
+    public static class Opening {
+        String ecoCode;
+        String name;
+        List<String> moves;
+
+        public Opening(String ecoCode, String name, String moveString) {
+            this.ecoCode = ecoCode;
+            this.name = name;
+            this.moves = List.of(moveString.trim().split("\\s+"));
+        }
+
+        public boolean matches(List<String> playedMoves) {
+            if (playedMoves.size() < moves.size()) return false;
+            for (int i = 0; i < moves.size(); i++) {
+                if (!playedMoves.get(i).equals(moves.get(i))) return false;
+            }
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            return ecoCode + " – " + name;
+        }
+    }
+
+    public static List<Opening> loadOpenings(File htmlFile) throws Exception {
+        List<Opening> openingList = new ArrayList<>();
+
+        Document doc = Jsoup.parse(htmlFile, "UTF-8");
+        Elements rows = doc.select("tr");
+
+        for (Element row : rows) {
+            Elements cols = row.select("td");
+            if (cols.size() >= 3) {
+                String eco = cols.get(0).text().trim();
+                String name = cols.get(1).text().trim();
+                String moveStr = cols.get(2).text().trim();
+
+                if (!eco.isEmpty() && !name.isEmpty() && !moveStr.isEmpty()) {
+                    openingList.add(new Opening(eco, name, moveStr));
+                }
+            }
+        }
+
+        return openingList;
+    }
+
+    public static Opening detectOpening(List<String> playedMoves, List<Opening> openings) {
+        Opening bestMatch = null;
+        int maxMatchedMoves = -1;
+
+        for (Opening opening : openings) {
+            if (opening.matches(playedMoves)) {
+                if (opening.moves.size() > maxMatchedMoves) {
+                    bestMatch = opening;
+                    maxMatchedMoves = opening.moves.size();
+                }
+            }
+        }
+
+        return bestMatch;
+    }
+
+    public static void main(String[] args) throws Exception {
+        File htmlFile = new File("eco_openings.html");
+        List<Opening> openings = loadOpenings(htmlFile);
+
+        // Beispielhafte gespielte Züge
+        List<String> played = List.of("e4", "e5", "Nf3", "Nc6");
+
+        Opening match = detectOpening(played, openings);
+        if (match != null) {
+            System.out.println("Erkannte Eröffnung: " + match);
+        } else {
+            System.out.println("Keine Eröffnung erkannt.");
+        }
+    }
+}
+
+9. Prompt: ich will dass der Hintergrund des gesamten rechten bildschirm hälfte mattes dunkel grün ist
+--> Ergänze ganz am Anfang der paintComponent(Graphics g) Methode folgenden Code:
+
+@Override
+protected void paintComponent(Graphics g) {
+    super.paintComponent(g);
+
+    // Rechte Bildschirmhälfte dunkelgrün färben
+    Graphics2D g2 = (Graphics2D) g.create();
+    Color mattDunkelgruen = new Color(0, 51, 0); // matter dunkler Grünton
+    int panelWidth = getWidth();
+    int panelHeight = getHeight();
+    g2.setColor(mattDunkelgruen);
+    g2.fillRect(panelWidth / 2, 0, panelWidth / 2, panelHeight);
+    g2.dispose();
+
+    // (Rest deines Codes folgt wie gehabt)
+    ...
+}
+
+10. Prompt: wie fügt man in JavaSwing Icons mit ImageIcon hinzu, und wie formatiert man sie auf kleinere größen?
+--> In Java Swing kannst du mit ImageIcon Icons zu Komponenten wie JLabel, JButton oder JMenuItem hinzufügen. Wenn du ein Icon einfügst und die Größe anpassen willst, musst du das Bild skalieren, bevor du es dem ImageIcon übergibst. Hier ist eine nüchterne, saubere Lösung:
+Beispiel: Icon in JButton einfügen und skalieren
+
+import javax.swing.*;
+import java.awt.*;
+
+public class IconBeispiel {
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = new JFrame("Icon Beispiel");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+            // Ursprüngliches Image laden
+            ImageIcon originalIcon = new ImageIcon("pfad/zum/bild.png");
+
+            // Bild skalieren (z. B. auf 32x32 Pixel)
+            Image skaliertesBild = originalIcon.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
+            ImageIcon skaliertesIcon = new ImageIcon(skaliertesBild);
+
+            // Icon in Button einfügen
+            JButton button = new JButton("Mit Icon", skaliertesIcon);
+
+            frame.add(button);
+            frame.pack();
+            frame.setLocationRelativeTo(null);
+            frame.setVisible(true);
+        });
+    }
+}
+
+Wichtige Hinweise
+
+    Image.SCALE_SMOOTH sorgt für bessere Qualität beim Skalieren.
+
+    Du kannst natürlich auch andere Komponenten wie JLabel oder JMenuItem verwenden:
+
+    JLabel label = new JLabel(skaliertesIcon);
+
+    Vermeide es, große Bilder ohne Skalierung direkt in die UI zu laden – das wirkt schnell unprofessionell.
+
+Wenn du willst, kann ich dir auch zeigen, wie man Icons aus dem Ressourcenordner (/resources) eines Maven- oder Gradle-Projekts lädt.
+
+11. Prompt: was machen damit fenster direkt in voll bild geöffnet wird? package de.thm.informatik.chess.ui;
+
+import java.io.IOException;
+
+import javax.swing.JFrame;
+
+public class MainWindow {
+    public static void main(String[] args) throws IOException {
+        JFrame frame = new JFrame("Chess");
+        ChessPanel panel = new ChessPanel();
+        panel.addClock(5);
+        frame.add(panel);
+        frame.pack();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+
+    }
+}
+--> Wenn du einfach nur willst, dass das Fenster ohne Schnickschnack den gesamten Bildschirm ausfüllt (ohne exklusiven Vollbildmodus, ohne spezielle API-Nutzung), kannst du es so machen:
+
+import javax.swing.JFrame;
+import java.awt.Toolkit;
+import java.awt.Dimension;
+import java.io.IOException;
+
+public class MainWindow {
+    public static void main(String[] args) throws IOException {
+        JFrame frame = new JFrame("Chess");
+        ChessPanel panel = new ChessPanel();
+        panel.addClock(5);
+        frame.add(panel);
+
+        // Bildschirmgröße holen und setzen
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        frame.setSize(screenSize);
+        frame.setLocation(0, 0);
+
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+    }
+}
+
+Kurz erklärt:
+
+    Toolkit.getDefaultToolkit().getScreenSize() liefert die Auflösung des Bildschirms.
+
+    frame.setSize(...) und frame.setLocation(0, 0) setzen das Fenster auf volle Größe, oben links beginnend.
+
+    Kein setUndecorated, kein GraphicsDevice, kein echter exklusiver Modus – nur einfacher, sauberer Vollbild-Look.
+    
+12. Ich entwickle eine GameState-Klasse für ein Schachprogramm, die den kompletten Spielzustand speichert – Brettposition, Zugseite und geschlagene Figuren. 
+Ich möchte Tests schreiben, die prüfen, ob der Spielzustand nach einem Zug korrekt gespeichert wird (also z. B. Figuren an den richtigen Positionen stehen und die Zugseite stimmt). 
+Außerdem soll getestet werden, dass die gefallenen Figuren-Listen im GameState unabhängig von den ursprünglich übergebenen Listen sind. Wie kann ich solche Tests gut formulieren?
+
+13. Prompt: wie kann man in java swing auf den vorherigen jframe zugreifen?
+--> In Java Swing können Sie auf den vorherigen JFrame zugreifen, indem Sie:
+
+    Referenz speichern: Bewahren Sie eine Referenz auf das vorherige Fenster auf
+
+    Window-Hierarchie nutzen: Verwenden Sie SwingUtilities.getWindowAncestor()
+
+    Listener-Pattern: Implementieren Sie ein Callback-System
+
+    Hier sind die besten Lösungsansätze:
+    1. Direkte Referenzspeicherung (einfachster Weg)
+    java
+
+    // Beim Erstellen des neuen Fensters
+    JFrame previousFrame = ...; // Referenz auf aktuelles Fenster
+    newFrame.addWindowListener(new WindowAdapter() {
+    @Override
+    public void windowClosed(WindowEvent e) {
+        previousFrame.setVisible(true); // Vorheriges Fenster wieder anzeigen
+    }
+    });
+
+    2. Window-Hierarchie durch Navigation
+    java
+
+    // Von einer Komponente aus zum übergeordneten Frame
+    JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(meineKomponente);
+    parentFrame.setVisible(true);
+
+14. Prompt: Wie kann man in java swing ein temporäres fenster öffnen zur ausgabe einer info? 
+--> In Java Swing gibt es mehrere Möglichkeiten, ein temporäres Fenster für Informationsausgaben zu öffnen. Hier sind die besten Optionen:
+1. JOptionPane (einfachste Lösung)
+java
+
+// Einfache Info-Box
+JOptionPane.showMessageDialog(parentFrame, "Ihre Information hier", "Titel", JOptionPane.INFORMATION_MESSAGE);
+
+// Mit Anpassungen
+JOptionPane.showMessageDialog(
+    null, // Zentriert auf Bildschirm
+    "Speichervorgang abgeschlossen",
+    "Erfolg",
+    JOptionPane.WARNING_MESSAGE,
+    new ImageIcon("icon.png")
+);
+
+Prompt 15: How can i manually disable the castlingrights for a customboard when using ChessLib 1.3.4? I want to do it in this class: (SetupPositionPanel)
+--> Yes — you can (and should) remove the castling rights manually in your SetupPositionPanel before finalizing the custom position, especially since you're using board.clear() and placing pieces manually.
+
+Since you're using ChessLib 1.3.4, you can manipulate the board state using its FEN string, because the library doesn't expose a direct method like setCastlingRights(...) publicly. Here's how you can do it cleanly:
+In your doneButton logic:
+
+// Get current board FEN
+	String fen = board.getFen();
+
+	// Replace the castling rights field with "-" (no castling)
+	String[] parts = fen.split(" ");
+	if (parts.length >= 6) {
+		parts[2] = "-"; // Castling rights
+		String newFen = String.join(" ", parts);
+		board.loadFromFen(newFen); // Re-apply FEN with disabled castling
+	}
+
+Prompt 16.: Ich entwickle ein Java-Schachprogramm und benutze die Bibliothek chesslib.
+Meine ChessEngine-Klasse hat ein Board-Objekt und Methoden wie getLegalMoves(), makeMove(Move) usw.
+Bitte schreibe mir eine Klasse ShowMoveOptions, die aus einer gegebenen Square-Position alle legalen Zielpositionen als List<Square> zurückgibt.
+Zeige außerdem, wie ich ShowMoveOptions im Swing-Panel (ChessPanel) integriere, um beim Klicken auf eine Figur deren legale Züge anzuzeigen.
+
+Prompt 17.: Ich plane, in meinem Java-Schachprojekt die Bibliothek chesslib zu nutzen.
+Mich interessiert, welche Kernfunktionen die Bibliothek bietet und wie eine einfache Implementierung aussehen könnte – zum Beispiel für Zugausführung, Zuglegalitätsprüfung oder Statusabfragen wie Schach oder Matt. Wie könnte ich das mit chesslib typischerweise umsetzen?
+
+Prompt 18.: Wie kann ich die Chesslib https://github.com/bhlangonijr/chesslib verwenden, um eine Schach-und Matt Erkennung in meinem Schachprogramm einzubauen. Zudem möchte ich in meinem Chesspannel eine Nachricht in einem Fenster dazu ausgeben. Ferner möchte ich in der Nachricht noch die richtigen Farbe des betroffenen Spielers in der Nachricht ausgeben
+
+Prompt 19.: Ich brauche einen MouseListener für mein Java-Schachspiel mit chesslib, der beim Klick das angeklickte Feld ermittelt, Figuren auswählt und Züge ausführt. Dabei soll er legale Züge prüfen
+
+Prompt 20.: Ich programmiere ein Schachspiel in Java und möchte eine Methode schreiben, die prüft, ob ein Bauernzug eine Promotion auslöst. Falls ja, soll ein Dialog erscheinen, in dem der Spieler die Figur auswählen kann, auf die der Bauer sich verwandeln soll (Dame, Turm, Läufer, Springer). Wenn keine Promotion nötig ist, soll ein normaler Zug zurückgegeben werden. Kannst du mir so eine Methode in Java schreiben, am besten mit Swing-Dialog zur Figurenwahl?
+
+Prompt 21.: Ich habe in meinem Java-Schachspiel eine Bauernpromotion implementiert, bei der der Bauer beim Erreichen der letzten Reihe in eine andere Figur umgewandelt wird. Das Problem: Nach der Umwandlung kann ich keine weiteren Züge mehr machen. Ich vermute, dass das am UCIParser liegt, da normale Züge 4 Zeichen haben, Promotion-Züge aber 5 Zeichen (z.B. e7e8q). Bitte hilf mir, meinen Parser so zu verbessern, dass er sowohl 4- als auch 5-stellige Züge zuverlässig verarbeiten kann. Wie kann ich in einer Schleife mehrere UCI-Züge (auch mit Promotion) richtig parsen inklusive Prüfung auf gültige Promotion-Zeichen? 
+
+Prompt 22.: Ich möchte in meinem Schachprogramm mit Chesslib eine Klasse PieceImageLoader erstellen, die alle Figurenbilder einmalig statisch aus meinen Ressourcen lädt und in einer Map<Piece, Image> speichert. Die Bilder liegen im Ressourcenordner /images/ und heißen z.B. wp.png für weißen Bauern, bn.png für schwarzen Springer usw. 
+
+Prompt 23: Erzeuge Java-Code, der aus einer Liste von Move-Objekten die UCI-Zugfolge generiert, indem er die Felder getFrom() und getTo() für jeden Zug an einen StringBuilder anhängt.
+-->
+StringBuilder uciMoves = new StringBuilder();
+
+        // UCI-Zugfolge aus den Move-Objekten zusammenbauen
+        for (Move move : moves) {
+            uciMoves.append(move.getFrom().toString().toLowerCase());
+            uciMoves.append(move.getTo().toString().toLowerCase());
+        }
+
+Promt 24: Welche Funktionalitäten fehlen in dieser Klasse (hier UciParser) um der SAN Notation möglichst nahe zu kommen?
+-->
+Punkte nach der Zugnummer, Figur als Großbuchstabe, korrektes Spielergebnis am Ende, Rochadenerkennung
+
+Prompt 25: Wie realisiere ich die Ergebnis erkennung für meine PGN Datei?
+-->
+StringBuilder und dann
+if (finalBoard.isMated()) {
+                result = finalBoard.getSideToMove() == com.github.bhlangonijr.chesslib.Side.WHITE ? "0-1" : "1-0";
+            } else if (finalBoard.isDraw()) {
+                result = "1/2-1/2";
+            }
+dann
+
+.append(result)
+
+
+
+

@@ -181,3 +181,7 @@ fabric.properties
 
 /target/
 
+.idea/
+/.project
+/.classpath
+/games/
