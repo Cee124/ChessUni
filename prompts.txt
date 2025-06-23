@@ -553,12 +553,6 @@ Kurz erklärt:
     frame.setSize(...) und frame.setLocation(0, 0) setzen das Fenster auf volle Größe, oben links beginnend.
 
     Kein setUndecorated, kein GraphicsDevice, kein echter exklusiver Modus – nur einfacher, sauberer Vollbild-Look.
-<<<<<<< HEAD
-
-12. ch programmiere ein Schachspiel in Java und verwende dazu die Chesslib von bhlangonijr, welche eine Move Klasse in der Form von (Square, Square) verwendet. 
-Ich möchte eine Methode schreiben, die prüft, ob ein Bauernzug eine Promotion auslöst. Falls ja, soll ein Dialog erscheinen, in dem der Spieler die Figur auswählen kann, auf die der Bauer sich verwandeln soll (Dame, Turm, Läufer, Springer). 
-Wenn keine Promotion nötig ist, soll ein normaler Zug zurückgegeben werden. Kannst du mir so eine Methode in Java schreiben, am besten mit Swing-Dialog zur Figurenwahl?“
-=======
 Prompt 11: How can i manually disable the castlingrights for a customboard when using ChessLib 1.3.4? I want to do it in this class: (SetupPositionPanel)
 -->Yes — you can (and should) remove the castling rights manually in your SetupPositionPanel before finalizing the custom position, especially since you're using board.clear() and placing pieces manually.
 
@@ -580,4 +574,49 @@ In your doneButton logic:
 12. Ich entwickle eine GameState-Klasse für ein Schachprogramm, die den kompletten Spielzustand speichert – Brettposition, Zugseite und geschlagene Figuren. 
 Ich möchte Tests schreiben, die prüfen, ob der Spielzustand nach einem Zug korrekt gespeichert wird (also z. B. Figuren an den richtigen Positionen stehen und die Zugseite stimmt). 
 Außerdem soll getestet werden, dass die gefallenen Figuren-Listen im GameState unabhängig von den ursprünglich übergebenen Listen sind. Wie kann ich solche Tests gut formulieren?
->>>>>>> devL
+
+13. Prompt: wie kann man in java swing auf den vorherigen jframe zugreifen?
+--> In Java Swing können Sie auf den vorherigen JFrame zugreifen, indem Sie:
+
+    Referenz speichern: Bewahren Sie eine Referenz auf das vorherige Fenster auf
+
+    Window-Hierarchie nutzen: Verwenden Sie SwingUtilities.getWindowAncestor()
+
+    Listener-Pattern: Implementieren Sie ein Callback-System
+
+    Hier sind die besten Lösungsansätze:
+    1. Direkte Referenzspeicherung (einfachster Weg)
+    java
+
+    // Beim Erstellen des neuen Fensters
+    JFrame previousFrame = ...; // Referenz auf aktuelles Fenster
+    newFrame.addWindowListener(new WindowAdapter() {
+    @Override
+    public void windowClosed(WindowEvent e) {
+        previousFrame.setVisible(true); // Vorheriges Fenster wieder anzeigen
+    }
+    });
+
+    2. Window-Hierarchie durch Navigation
+    java
+
+    // Von einer Komponente aus zum übergeordneten Frame
+    JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(meineKomponente);
+    parentFrame.setVisible(true);
+
+14. Prompt: Wie kann man in java swing ein temporäres fenster öffnen zur ausgabe einer info? 
+--> In Java Swing gibt es mehrere Möglichkeiten, ein temporäres Fenster für Informationsausgaben zu öffnen. Hier sind die besten Optionen:
+1. JOptionPane (einfachste Lösung)
+java
+
+// Einfache Info-Box
+JOptionPane.showMessageDialog(parentFrame, "Ihre Information hier", "Titel", JOptionPane.INFORMATION_MESSAGE);
+
+// Mit Anpassungen
+JOptionPane.showMessageDialog(
+    null, // Zentriert auf Bildschirm
+    "Speichervorgang abgeschlossen",
+    "Erfolg",
+    JOptionPane.WARNING_MESSAGE,
+    new ImageIcon("icon.png")
+);

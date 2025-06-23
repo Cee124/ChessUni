@@ -78,19 +78,19 @@ public class InputWindow extends JPanel {
         add(enter);
         add(setupButton);
 
-        modus3.addActionListener(_ -> {
+        modus3.addActionListener(e -> {
             handler.addClock(3);
         });
-        modus5.addActionListener(_ -> {
+        modus5.addActionListener(e -> {
             handler.addClock(5);
         });
-        modus10.addActionListener(_ -> {
+        modus10.addActionListener(e -> {
             handler.addClock(10);
         });
-        whiteKing.addActionListener(_ -> panel.setColor(true));
-        blackKing.addActionListener(_ -> panel.setColor(false));
+        whiteKing.addActionListener(e -> panel.setColor(true));
+        blackKing.addActionListener(e -> panel.setColor(false));
 
-        rewindBox.addActionListener(_ -> {
+        rewindBox.addActionListener(e -> {
             rewindSelected = !rewindSelected;
 
             if (rewindSelected) {
@@ -104,7 +104,7 @@ public class InputWindow extends JPanel {
             }
         });
         
-        setupButton.addActionListener(_ -> {
+        setupButton.addActionListener(e -> {
             setupSelected = true;
             
             JFrame framePanel = new JFrame("Custom Position");
@@ -112,8 +112,6 @@ public class InputWindow extends JPanel {
             SetupPositionPanel setupPanel = new SetupPositionPanel(framePanel, customBoard -> {
                 this.customBoard = customBoard;
                 panel.setCustomBoard(customBoard);
-//                ChessEngine engine = panel.getEngine();
-//                engine.setBoard(customBoard);
                 
             });
 
@@ -130,7 +128,7 @@ public class InputWindow extends JPanel {
             
         });
 
-        toggleMoveOptionsBox.addActionListener(_ -> {
+        toggleMoveOptionsBox.addActionListener(e -> {
             moveOptionsSelected = !moveOptionsSelected;
             if (moveOptionsSelected) {
                 toggleMoveOptionsBox.setIcon(facade.getIcon("TICKED"));
@@ -143,7 +141,7 @@ public class InputWindow extends JPanel {
         });
 
 
-        enter.addActionListener(_ -> {
+        enter.addActionListener(e -> {
         	
         	if (setupSelected && customBoard != null) {
                 panel.setCustomBoard(customBoard);
