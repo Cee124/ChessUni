@@ -639,5 +639,18 @@ Prompt 21.: Ich habe in meinem Java-Schachspiel eine Bauernpromotion implementie
 
 Prompt 22.: Ich möchte in meinem Schachprogramm mit Chesslib eine Klasse PieceImageLoader erstellen, die alle Figurenbilder einmalig statisch aus meinen Ressourcen lädt und in einer Map<Piece, Image> speichert. Die Bilder liegen im Ressourcenordner /images/ und heißen z.B. wp.png für weißen Bauern, bn.png für schwarzen Springer usw. 
 
+Prompt 23: Erzeuge Java-Code, der aus einer Liste von Move-Objekten die UCI-Zugfolge generiert, indem er die Felder getFrom() und getTo() für jeden Zug an einen StringBuilder anhängt.
+-->
+StringBuilder uciMoves = new StringBuilder();
+
+        // UCI-Zugfolge aus den Move-Objekten zusammenbauen
+        for (Move move : moves) {
+            uciMoves.append(move.getFrom().toString().toLowerCase());
+            uciMoves.append(move.getTo().toString().toLowerCase());
+        }
+
+Promt 24: Welche Funktionalitäten fehlen in dieser Klasse (hier UciParser) um der SAN Notation möglichst nahe zu kommen?
+-->
+Punkte nach der Zugnummer, Figur als Großbuchstabe, korrektes Spielergebnis am Ende.
 
 
