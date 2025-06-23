@@ -15,6 +15,7 @@ public class FallenPiecesHandler {
     private int squareSize;
     private boolean color;
 	private Facade facade; 
+
     public FallenPiecesHandler(List<Piece> whiteFallenPieces, List<Piece> blackFallenPieces, int squareSize, boolean color, Facade facade) {
         this.whiteFallenPieces = whiteFallenPieces;
         this.blackFallenPieces = blackFallenPieces;
@@ -55,6 +56,7 @@ public class FallenPiecesHandler {
 				xPieceWhite += 15;
 			}
 		}
+		System.out.println("Drawing at: " + xPieceWhite + ", " + yPieceWhite);
 
 		// Draw fallen pieces black
 		int xPieceBlack = clockX;
@@ -62,7 +64,7 @@ public class FallenPiecesHandler {
 		int countBlack = 0;
 		for (Piece p : topPieces) {
 			countBlack++;
-			Image imgP = facade.getImage(p);
+			Image imgP = PieceImageLoader.getImage(p);
 			if (imgP != null) {
 				g.drawImage(imgP, xPieceBlack, yPieceBlack, 20, 20, null);
 			}

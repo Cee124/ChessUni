@@ -218,8 +218,10 @@ public class ChessPanel extends JPanel {
 						if (isCaptured) {
 							if (facade.getBoard().getSideToMove() == WHITE) {
 								whiteFallenPieces.add(targetPiece);
+								System.out.println("White fallen pieces: " + whiteFallenPieces);
 							} else {
 								blackFallenPieces.add(targetPiece);
+								System.out.println("Black fallen pieces: " + blackFallenPieces);
 							}
 						}
 						// Zug wird ausgeführt
@@ -259,6 +261,8 @@ public class ChessPanel extends JPanel {
 							JOptionPane.showMessageDialog(ChessPanel.this, "The game is over");
 						}
 						//Aktualisierung der Ansicht
+						drawFP.setWhiteFallenPieces(whiteFallenPieces);
+						drawFP.setBlackFallenPieces(blackFallenPieces);
 						repaint();
 					} else {
 						logger.error("Illegal Move: {}", move);
@@ -375,9 +379,8 @@ public class ChessPanel extends JPanel {
 		forwardButton.setBounds(forwardButtonX, buttonY, 30, 30);
 		quicksaveButton.setBounds(centerInStats - 30 - 20, buttonY, 30, 30);
 		quickloadButton.setBounds(centerInStats + 60 + 40, buttonY, 30, 30);
-		loadPGNButton.setBounds(1250, 500, 150, 30);
-		savePGNButton.setBounds(1250, 540, 150, 30);
-
+		loadPGNButton.setBounds(centerInStats - 110, 100, 150, 30);
+		savePGNButton.setBounds(centerInStats + 40, 100, 150, 30);
 	}
 
 	@Override
@@ -386,17 +389,18 @@ public class ChessPanel extends JPanel {
 		super.paintComponent(g);
 
 		drawB.drawBoard(g, highlightedSquares);
-		drawFP.drawFallenPieces(g);
+
+		Graphics2D g2 = (Graphics2D) g.create();
+		drawFP.drawFallenPieces(g2);
 
 		List<Move> moveHistory = facade.getMoveHistory();
 
 		//Rechte Bildschirmhälfte dunkelgrün färben
-		Graphics2D g2 = (Graphics2D) g.create();
 		Color colorRightSide = new Color(180, 180, 180);
 		int panelWidth = getWidth();
 		int panelHeight = getHeight();
 		g2.setColor(colorRightSide);
-		g2.fillRect(panelWidth / 2, 0, panelWidth / 2, panelHeight);
+		g2.fillRect((panelWidth / 2) + 220, 0, (panelWidth / 2) - 220, panelHeight);
 
 		int boardPixelSize = 8 * squareSize;
 
