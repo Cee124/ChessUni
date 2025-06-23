@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
@@ -96,9 +97,9 @@ public class ChessPanel extends JPanel {
 		moveHistory = facade.getMoveHistory();
 		this.drawB = new DrawBoard(facade, squareSize, color);
 		this.handlerC = handlerC;
-		handlerC.setPanel(this);
-		handlerC.setFacade(facade);
-		handlerC.addClock(5);
+		this.handlerC.setPanel(this);
+		this.handlerC.setFacade(facade);
+		this.handlerC.addClock(5);
 
 		handlerS = new SkipHandler(facade.getEngine(), facade);
 		handlerS.setPanel(this);
@@ -135,16 +136,16 @@ public class ChessPanel extends JPanel {
 		add(savePGNButton);
 
 		//Button Logik
-		forwardButton.addActionListener(_ -> handlerS.fastForwardMove());
-		rewindButton.addActionListener(_ -> handlerS.rewindMove());
-		startButton.addActionListener(_ -> handlerC.startClocks());
-		pauseButton.addActionListener(_ -> handlerC.pauseClocks());
+		forwardButton.addActionListener(e -> handlerS.fastForwardMove());
+		rewindButton.addActionListener(e -> handlerS.rewindMove());
+		startButton.addActionListener(e -> handlerC.startClocks());
+		pauseButton.addActionListener(e -> handlerC.pauseClocks());
 
-		quicksaveButton.addActionListener(_ -> {
+		quicksaveButton.addActionListener(e -> {
 			facade.quicksave();
 		});
 
-		quickloadButton.addActionListener(_ -> {
+		quickloadButton.addActionListener(e -> {
 			facade.quickload();
 		});
 		
@@ -167,6 +168,7 @@ public class ChessPanel extends JPanel {
                 handlerC.setWhiteRemaining(0);    
                 handlerC.setBlackRemaining(0);
 
+<<<<<<< HEAD
 				PGNHandling.loadGame(filePath, facade);
 				currentMoveIndex = moveHistory.size();
 				handlerC.pauseClocks(); // Uhren anhalten
@@ -174,6 +176,13 @@ public class ChessPanel extends JPanel {
 				handlerC.setBlackRemaining(0);
 			}});
         savePGNButton.addActionListener(_ -> {
+=======
+                repaint();
+            }
+        });
+
+        savePGNButton.addActionListener(e -> {
+>>>>>>> bb933aa07adcd9664e75ec87cb4753f285ac38d9
         	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
         	String timestamp = LocalDateTime.now().format(formatter);
         	String filePath = "games/game_" + timestamp + ".pgn";
@@ -311,6 +320,44 @@ public class ChessPanel extends JPanel {
 		return new Move(from, to, promoPiece);
 	}
 
+
+	public void onTimeExpired(Side side) throws IOException{
+		if (side == WHITE) {
+			if (color) {
+				JOptionPane.showMessageDialog(ChessPanel.this, "Time violation White. Black Wins!"); 
+			} else {
+				JOptionPane.showMessageDialog(ChessPanel.this, "Time violation Black. White Wins!");
+			}
+		} else {
+			if (color) {
+				JOptionPane.showMessageDialog(ChessPanel.this, "Time violation Black. White Wins!", 
+										"Game Over", JOptionPane.INFORMATION_MESSAGE);
+			} else {
+				JOptionPane.showMessageDialog(ChessPanel.this, "Time violation White. Black Wins!");
+			}
+		}
+
+		handlerC.pauseClocks();
+
+		JFrame topFrame = (JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
+    	if (topFrame != null) {
+        	topFrame.dispose();
+    	}
+
+		reOpenInputWindow();
+	}
+
+	public void reOpenInputWindow() throws IOException{
+		JFrame frameInput = new JFrame("Input Window");
+        InputWindow input = new InputWindow();
+        frameInput.setContentPane(input);
+
+        frameInput.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frameInput.setResizable(false);
+        frameInput.setSize(500, 400);
+        frameInput.setLocationRelativeTo(null);
+        frameInput.setVisible(true);
+	}
 
 	@Override
 	// Methode zum festlegen der Button Positionen

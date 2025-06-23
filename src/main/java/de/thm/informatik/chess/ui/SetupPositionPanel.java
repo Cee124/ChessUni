@@ -112,7 +112,18 @@ public class SetupPositionPanel extends JPanel {
 				buttonHeight);
 
 		// Button Logik
-		doneButton.addActionListener(_ -> {
+		doneButton.addActionListener(e -> {
+			
+			String fen = board.getFen();
+
+			// Im FEN String manuell die castlingRights auf "-" setzen und somit deaktivieren
+			String[] parts = fen.split(" ");
+			if (parts.length >= 6) {
+				parts[2] = "-";
+				String newFen = String.join(" ", parts);
+				board.loadFromFen(newFen);
+			}
+			
 			if (onDoneCallback != null) {
 				onDoneCallback.accept(board);
 			}
@@ -122,19 +133,19 @@ public class SetupPositionPanel extends JPanel {
 			}
 		});
 
-		whitePawnButton.addActionListener(_ -> selectedPiece = Piece.WHITE_PAWN);
-		whiteRookButton.addActionListener(_ -> selectedPiece = Piece.WHITE_ROOK);
-		whiteBishopButton.addActionListener(_ -> selectedPiece = Piece.WHITE_BISHOP);
-		whiteKnightButton.addActionListener(_ -> selectedPiece = Piece.WHITE_KNIGHT);
-		whiteQueenButton.addActionListener(_ -> selectedPiece = Piece.WHITE_QUEEN);
-		whiteKingButton.addActionListener(_ -> selectedPiece = Piece.WHITE_KING);
+		whitePawnButton.addActionListener(e -> selectedPiece = Piece.WHITE_PAWN);
+		whiteRookButton.addActionListener(e -> selectedPiece = Piece.WHITE_ROOK);
+		whiteBishopButton.addActionListener(e -> selectedPiece = Piece.WHITE_BISHOP);
+		whiteKnightButton.addActionListener(e -> selectedPiece = Piece.WHITE_KNIGHT);
+		whiteQueenButton.addActionListener(e -> selectedPiece = Piece.WHITE_QUEEN);
+		whiteKingButton.addActionListener(e -> selectedPiece = Piece.WHITE_KING);
 
-		blackPawnButton.addActionListener(_ -> selectedPiece = Piece.BLACK_PAWN);
-		blackRookButton.addActionListener(_ -> selectedPiece = Piece.BLACK_ROOK);
-		blackBishopButton.addActionListener(_ -> selectedPiece = Piece.BLACK_BISHOP);
-		blackKnightButton.addActionListener(_ -> selectedPiece = Piece.BLACK_KNIGHT);
-		blackQueenButton.addActionListener(_ -> selectedPiece = Piece.BLACK_QUEEN);
-		blackKingButton.addActionListener(_ -> selectedPiece = Piece.BLACK_KING);
+		blackPawnButton.addActionListener(e -> selectedPiece = Piece.BLACK_PAWN);
+		blackRookButton.addActionListener(e -> selectedPiece = Piece.BLACK_ROOK);
+		blackBishopButton.addActionListener(e -> selectedPiece = Piece.BLACK_BISHOP);
+		blackKnightButton.addActionListener(e -> selectedPiece = Piece.BLACK_KNIGHT);
+		blackQueenButton.addActionListener(e -> selectedPiece = Piece.BLACK_QUEEN);
+		blackKingButton.addActionListener(e -> selectedPiece = Piece.BLACK_KING);
 
 		addMouseListener(new MouseAdapter() {
 			@Override
