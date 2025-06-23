@@ -42,6 +42,7 @@ public class ChessEngine {
     public boolean isGameOver() {
         return board.isMated() || board.isDraw();
     }
+
     public boolean isCheckmate() {
         return board.isMated();
     }

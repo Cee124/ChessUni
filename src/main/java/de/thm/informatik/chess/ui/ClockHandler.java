@@ -2,14 +2,14 @@ package de.thm.informatik.chess.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 
 import javax.swing.Timer;
 
 import com.github.bhlangonijr.chesslib.Side;
+import static com.github.bhlangonijr.chesslib.Side.WHITE;
 
 import de.thm.informatik.chess.domain.ChessEngine;
-
-import static com.github.bhlangonijr.chesslib.Side.WHITE;
 
 public class ClockHandler {
 
@@ -93,6 +93,13 @@ public class ClockHandler {
                     whiteRemaining = 0;
                     whiteRunning = false;
                     whiteTimer.stop();
+                    pauseClocks();
+                    if(panel != null){
+                        try {
+                            panel.onTimeExpired(Side.WHITE);
+                        } catch (IOException e1) {
+                        }
+                    }
                 }
                 //Ansicht aktualisieren
                 panel.repaint();
@@ -109,6 +116,13 @@ public class ClockHandler {
                     blackRemaining = 0;
                     blackRunning = false;
                     blackTimer.stop();
+                    pauseClocks();
+                    if(panel != null){
+                        try {
+                            panel.onTimeExpired(Side.BLACK);
+                        } catch (IOException e2) {
+                        }
+                    }
                 }
                 //Ansicht aktualisieren
                 panel.repaint();
