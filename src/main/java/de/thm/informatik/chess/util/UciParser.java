@@ -1,4 +1,4 @@
-package de.thm.informatik.chess.domain;
+package de.thm.informatik.chess.util;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

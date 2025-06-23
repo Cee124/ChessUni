@@ -13,11 +13,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import com.github.bhlangonijr.chesslib.Board;
-import com.github.bhlangonijr.chesslib.Piece;
-import com.github.bhlangonijr.chesslib.Square;
 
-import de.thm.informatik.chess.domain.ChessEngine;
-import de.thm.informatik.chess.domain.ClockHandler;
+import de.thm.informatik.chess.domain.Facade;
+import de.thm.informatik.chess.util.PieceIconLoader;
 
 public class InputWindow extends JPanel {
 
@@ -39,29 +37,32 @@ public class InputWindow extends JPanel {
     private final JLabel toggleMoveOptionsText;
     private final JButton toggleMoveOptionsBox;
     private boolean moveOptionsSelected = false;
-    private int timeType;
-
+   
     private ChessPanel panel;
-    private SetupPositionPanel setupPanel;
     private ClockHandler handler;
+    private DrawBoard drawB;
     private Board customBoard;
+    private Facade facade;
 
     public InputWindow() throws IOException {
+       
         this.handler = new ClockHandler();
         this.panel = new ChessPanel(handler);
+        this.drawB = panel.getDrawBoard();
+        this.facade = panel.getFacade();
 
         setLayout(null);
 
         modus3 = new JButton("3 Min");
         modus5 = new JButton("5 Min");
         modus10 = new JButton("10 Min");
-        whiteKing = new JButton(PieceIconLoader.WHITEKING_ICONX);
-        blackKing = new JButton(PieceIconLoader.BLACKKING_ICONX);
+        whiteKing = new JButton(facade.getIcon("WHITEKING"));
+        blackKing = new JButton(facade.getIcon("BLACKKING"));
         rewindText = new JLabel("Rewind? ");
-        rewindBox = new JButton(PieceIconLoader.EMPTY_ICON);
+        rewindBox = new JButton(facade.getIcon("EMPTY"));
         setupButton = new JButton("Setup Custom Position");
         toggleMoveOptionsText = new JLabel("Show Move Options? ");
-        toggleMoveOptionsBox = new JButton(IconLoader.EMPTY_ICON);
+        toggleMoveOptionsBox = new JButton(facade.getIcon("EMPTY"));
 
         enter = new JButton("Enter");
 
@@ -77,36 +78,33 @@ public class InputWindow extends JPanel {
         add(enter);
         add(setupButton);
 
-        // Default value für Timer
-        timeType = 5;
-
-        modus3.addActionListener(e -> {
+        modus3.addActionListener(_ -> {
             handler.addClock(3);
         });
-        modus5.addActionListener(e -> {
+        modus5.addActionListener(_ -> {
             handler.addClock(5);
         });
-        modus10.addActionListener(e -> {
+        modus10.addActionListener(_ -> {
             handler.addClock(10);
         });
-        whiteKing.addActionListener(e -> panel.setColor(true));
-        blackKing.addActionListener(e -> panel.setColor(false));
+        whiteKing.addActionListener(_ -> panel.setColor(true));
+        blackKing.addActionListener(_ -> panel.setColor(false));
 
-        rewindBox.addActionListener(e -> {
+        rewindBox.addActionListener(_ -> {
             rewindSelected = !rewindSelected;
 
             if (rewindSelected) {
-                rewindBox.setIcon(IconLoader.TICKED_ICON);
+                rewindBox.setIcon(facade.getIcon("TICKED"));
                 panel.setRewind(true);
 
             } else {
-                rewindBox.setIcon(IconLoader.EMPTY_ICON);
+                rewindBox.setIcon(facade.getIcon("EMPTY"));
 
                 panel.setRewind(false);
             }
         });
         
-        setupButton.addActionListener(e -> {
+        setupButton.addActionListener(_ -> {
             setupSelected = true;
             
             JFrame framePanel = new JFrame("Custom Position");
@@ -132,20 +130,20 @@ public class InputWindow extends JPanel {
             
         });
 
-        toggleMoveOptionsBox.addActionListener(e -> {
+        toggleMoveOptionsBox.addActionListener(_ -> {
             moveOptionsSelected = !moveOptionsSelected;
             if (moveOptionsSelected) {
-                toggleMoveOptionsBox.setIcon(IconLoader.TICKED_ICON);
-                panel.setShowMoveOptions(true);
+                toggleMoveOptionsBox.setIcon(facade.getIcon("TICKED"));
+                drawB.setShowMoveOptions(true);
             } else {
-                toggleMoveOptionsBox.setIcon(IconLoader.EMPTY_ICON);
-                panel.setShowMoveOptions(false);
+                toggleMoveOptionsBox.setIcon(facade.getIcon("EMPTY"));
+                drawB.setShowMoveOptions(false);
             }
 
         });
 
 
-        enter.addActionListener(e -> {
+        enter.addActionListener(_ -> {
         	
         	if (setupSelected && customBoard != null) {
                 panel.setCustomBoard(customBoard);
