@@ -621,3 +621,21 @@ In your doneButton logic:
 		board.loadFromFen(newFen); // Re-apply FEN with disabled castling
 	}
 
+Prompt 16.: Ich entwickle ein Java-Schachprogramm und benutze die Bibliothek chesslib.
+Meine ChessEngine-Klasse hat ein Board-Objekt und Methoden wie getLegalMoves(), makeMove(Move) usw.
+Bitte schreibe mir eine Klasse ShowMoveOptions, die aus einer gegebenen Square-Position alle legalen Zielpositionen als List<Square> zurückgibt.
+Zeige außerdem, wie ich ShowMoveOptions im Swing-Panel (ChessPanel) integriere, um beim Klicken auf eine Figur deren legale Züge anzuzeigen.
+
+Prompt 17.: Ich plane, in meinem Java-Schachprojekt die Bibliothek chesslib zu nutzen.
+Mich interessiert, welche Kernfunktionen die Bibliothek bietet und wie eine einfache Implementierung aussehen könnte – zum Beispiel für Zugausführung, Zuglegalitätsprüfung oder Statusabfragen wie Schach oder Matt. Wie könnte ich das mit chesslib typischerweise umsetzen?
+
+Prompt 18.: Wie kann ich die Chesslib https://github.com/bhlangonijr/chesslib verwenden, um eine Schach-und Matt Erkennung in meinem Schachprogramm einzubauen. Zudem möchte ich in meinem Chesspannel eine Nachricht in einem Fenster dazu ausgeben. Ferner möchte ich in der Nachricht noch die richtigen Farbe des betroffenen Spielers in der Nachricht ausgeben
+
+Prompt 19.: Ich brauche einen MouseListener für mein Java-Schachspiel mit chesslib, der beim Klick das angeklickte Feld ermittelt, Figuren auswählt und Züge ausführt. Dabei soll er legale Züge prüfen
+
+Prompt 20.: Ich programmiere ein Schachspiel in Java und möchte eine Methode schreiben, die prüft, ob ein Bauernzug eine Promotion auslöst. Falls ja, soll ein Dialog erscheinen, in dem der Spieler die Figur auswählen kann, auf die der Bauer sich verwandeln soll (Dame, Turm, Läufer, Springer). Wenn keine Promotion nötig ist, soll ein normaler Zug zurückgegeben werden. Kannst du mir so eine Methode in Java schreiben, am besten mit Swing-Dialog zur Figurenwahl?
+
+Prompt 21.: Ich habe in meinem Java-Schachspiel eine Bauernpromotion implementiert, bei der der Bauer beim Erreichen der letzten Reihe in eine andere Figur umgewandelt wird. Das Problem: Nach der Umwandlung kann ich keine weiteren Züge mehr machen. Ich vermute, dass das am UCIParser liegt, da normale Züge 4 Zeichen haben, Promotion-Züge aber 5 Zeichen (z.B. e7e8q). Bitte hilf mir, meinen Parser so zu verbessern, dass er sowohl 4- als auch 5-stellige Züge zuverlässig verarbeiten kann. Wie kann ich in einer Schleife mehrere UCI-Züge (auch mit Promotion) richtig parsen inklusive Prüfung auf gültige Promotion-Zeichen? 
+
+
+
