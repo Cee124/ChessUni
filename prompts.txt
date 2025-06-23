@@ -553,3 +553,7 @@ Kurz erklärt:
     frame.setSize(...) und frame.setLocation(0, 0) setzen das Fenster auf volle Größe, oben links beginnend.
 
     Kein setUndecorated, kein GraphicsDevice, kein echter exklusiver Modus – nur einfacher, sauberer Vollbild-Look.
+
+12. ch programmiere ein Schachspiel in Java und verwende dazu die Chesslib von bhlangonijr, welche eine Move Klasse in der Form von (Square, Square) verwendet. 
+Ich möchte eine Methode schreiben, die prüft, ob ein Bauernzug eine Promotion auslöst. Falls ja, soll ein Dialog erscheinen, in dem der Spieler die Figur auswählen kann, auf die der Bauer sich verwandeln soll (Dame, Turm, Läufer, Springer). 
+Wenn keine Promotion nötig ist, soll ein normaler Zug zurückgegeben werden. Kannst du mir so eine Methode in Java schreiben, am besten mit Swing-Dialog zur Figurenwahl?“

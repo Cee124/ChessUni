@@ -29,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.github.bhlangonijr.chesslib.Board;
 import com.github.bhlangonijr.chesslib.Piece;
+import com.github.bhlangonijr.chesslib.Rank;
 import com.github.bhlangonijr.chesslib.Side;
 import com.github.bhlangonijr.chesslib.Square;
 import com.github.bhlangonijr.chesslib.move.Move;
@@ -58,8 +59,8 @@ public class ChessPanel extends JPanel {
 	private final JButton pauseButton;
 	private final JButton quicksaveButton;
 	private final JButton quickloadButton;
-    private final JButton loadPGNButton;
-    private final JButton savePGNButton;
+	private final JButton loadPGNButton;
+	private final JButton savePGNButton;
 
 	private int currentMoveIndex;
 
@@ -139,40 +140,38 @@ public class ChessPanel extends JPanel {
 		quickloadButton.addActionListener(e -> {
 			quickload();
 		});
-		
-		//Laden eines Spiels
-        loadPGNButton.addActionListener(e -> {
-            javax.swing.JFileChooser fileChooser = new javax.swing.JFileChooser();
-            fileChooser.setDialogTitle("PGN-Datei laden");
 
-            int userSelection = fileChooser.showOpenDialog(this);
+		// Laden eines Spiels
+		loadPGNButton.addActionListener(e -> {
+			javax.swing.JFileChooser fileChooser = new javax.swing.JFileChooser();
+			fileChooser.setDialogTitle("PGN-Datei laden");
 
-            if (userSelection == javax.swing.JFileChooser.APPROVE_OPTION) {
-                java.io.File fileToLoad = fileChooser.getSelectedFile();
-                String filePath = fileToLoad.getAbsolutePath();
-                
-                PGNHandling.loadGame(filePath, engine);
-                currentMoveIndex = moveHistory.size();
-                handler.pauseClocks();           // Uhren anhalten
-                handler.setWhiteRemaining(0);    // Zeit auf 0 setzen (optional)
-                handler.setBlackRemaining(0);
+			int userSelection = fileChooser.showOpenDialog(this);
 
+			if (userSelection == javax.swing.JFileChooser.APPROVE_OPTION) {
+				java.io.File fileToLoad = fileChooser.getSelectedFile();
+				String filePath = fileToLoad.getAbsolutePath();
 
-                repaint();
-            }
-        });
+				PGNHandling.loadGame(filePath, engine);
+				currentMoveIndex = moveHistory.size();
+				handler.pauseClocks(); // Uhren anhalten
+				handler.setWhiteRemaining(0); // Zeit auf 0 setzen (optional)
+				handler.setBlackRemaining(0);
 
+				repaint();
+			}
+		});
 
-        //Speichern eines Spiels
-        savePGNButton.addActionListener(e -> {
-        	//für den aktuellen Zeitpunkt im Dateinamen
-        	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
-        	String timestamp = LocalDateTime.now().format(formatter);
-        	String filePath = "games/game_" + timestamp + ".pgn";
-        	
-            PGNHandling pgnHandler = new PGNHandling(filePath);
-            pgnHandler.saveGame(ChessPanel.getMoveHistory());
-        });
+		// Speichern eines Spiels
+		savePGNButton.addActionListener(e -> {
+			// für den aktuellen Zeitpunkt im Dateinamen
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
+			String timestamp = LocalDateTime.now().format(formatter);
+			String filePath = "games/game_" + timestamp + ".pgn";
+
+			PGNHandling pgnHandler = new PGNHandling(filePath);
+			pgnHandler.saveGame(ChessPanel.getMoveHistory());
+		});
 
 		addMouseListener(new MouseAdapter() {
 			@Override
@@ -182,19 +181,33 @@ public class ChessPanel extends JPanel {
 				Square clickedSquare = squareFromCoords(rank, file);
 
 				Piece targetPiece = engine.getPiece(clickedSquare);
+
 				boolean isCaptured = targetPiece != Piece.NONE;
 
 				if (selectedSquare == null) {
-					if (engine.getPiece(clickedSquare) != Piece.NONE) {
+					if (targetPiece != Piece.NONE) {
 						selectedSquare = clickedSquare;
 						highlightedSquares = moveOption.getLegalTargetSquares(selectedSquare);
 						repaint();
 					}
 				} else {
-					Move move = new Move(selectedSquare, clickedSquare);
+					Piece movingPiece = engine.getPiece(selectedSquare);
+					Move move = createMoveWithPromotionIfNeeded(selectedSquare, clickedSquare,
+							engine.getBoard().getSideToMove(), movingPiece);
+
+					// Prüfe, ob Promotion abgebrochen wurde
+					if (move == null) {
+						selectedSquare = null;
+						highlightedSquares.clear();
+						repaint();
+						return;
+					}
 					// Liste aller legalen Moves
 					List<Move> legalMoves = engine.getLegalMoves();
-
+					System.out.println("Legal moves:");
+					for (Move m : legalMoves)
+						System.out.println(m);
+					System.out.println("Versuchter Move: " + move);
 					// Wenn die Liste eine Zug enthält
 					if (legalMoves.contains(move)) {
 						Side movingSide = engine.getBoard().getSideToMove();
@@ -235,7 +248,7 @@ public class ChessPanel extends JPanel {
 						// Schach-Erkennung
 						else if (engine.isInCheck()) {
 							JOptionPane.showMessageDialog(ChessPanel.this,
-									(nextSide == WHITE ? "Schwarz" : "Weiß") + " is in Check!");
+									(nextSide == WHITE ? "White" : "Black") + " is in Check!");
 						} else if (engine.isGameOver()) {
 							JOptionPane.showMessageDialog(ChessPanel.this, "The game is over");
 						}
@@ -252,6 +265,44 @@ public class ChessPanel extends JPanel {
 				}
 			}
 		});
+	}
+
+	private Move createMoveWithPromotionIfNeeded(Square from, Square to, Side side, Piece movingPiece) {
+		// Prüfen, ob Promotion nötig ist
+		Rank targetRank = to.getRank();
+		boolean isPromotion = (movingPiece == Piece.WHITE_PAWN && targetRank == Rank.RANK_8 && side == Side.WHITE) ||
+				(movingPiece == Piece.BLACK_PAWN && targetRank == Rank.RANK_1 && side == Side.BLACK);
+
+		if (!isPromotion) {
+			// Keine Promotion, normaler Zug
+			return new Move(from, to);
+		}
+
+		// Promotion-Figur auswählen
+		String[] options = { "Dame", "Turm", "Läufer", "Springer" };
+		int choice = JOptionPane.showOptionDialog(this, // this = z.B. dein JPanel oder Frame
+				"Wähle eine Figur zur Promotion:",
+				"Bauernpromotion",
+				JOptionPane.DEFAULT_OPTION,
+				JOptionPane.QUESTION_MESSAGE,
+				null,
+				options,
+				options[0]);
+
+		if (choice == JOptionPane.CLOSED_OPTION) {
+			// Spieler hat Dialog geschlossen -> Abbrechen
+			return null;
+		}
+
+		Piece promoPiece = null;
+		switch (choice) {
+			case 0 -> promoPiece = (side == Side.WHITE) ? Piece.WHITE_QUEEN : Piece.BLACK_QUEEN;
+			case 1 -> promoPiece = (side == Side.WHITE) ? Piece.WHITE_ROOK : Piece.BLACK_ROOK;
+			case 2 -> promoPiece = (side == Side.WHITE) ? Piece.WHITE_BISHOP : Piece.BLACK_BISHOP;
+			case 3 -> promoPiece = (side == Side.WHITE) ? Piece.WHITE_KNIGHT : Piece.BLACK_KNIGHT;
+		}
+
+		return new Move(from, to, promoPiece);
 	}
 
 	// Methode um Liste gemachter Züge zurückzugeben
@@ -276,7 +327,8 @@ public class ChessPanel extends JPanel {
 				engine.makeMove(moveHistory.get(i));
 			}
 
-			//Erneute Prüfung welcher Spieler am Zug ist wenn rewinded wurde, damit korrekte Uhr startet
+			// Erneute Prüfung welcher Spieler am Zug ist wenn rewinded wurde, damit
+			// korrekte Uhr startet
 			handler.pauseClocks();
 			Side currentSide = engine.getBoard().getSideToMove();
 			if (color) {
@@ -292,7 +344,7 @@ public class ChessPanel extends JPanel {
 					handler.startWhiteClock();
 				}
 			}
-			//Ansicht aktualisieren
+			// Ansicht aktualisieren
 			repaint();
 		}
 	}
@@ -335,7 +387,7 @@ public class ChessPanel extends JPanel {
 		quicksaveButton.setBounds(centerInStats - 30 - 20, buttonY, 30, 30);
 		quickloadButton.setBounds(centerInStats + 60 + 40, buttonY, 30, 30);
 		loadPGNButton.setBounds(1250, 500, 150, 30);
-        savePGNButton.setBounds(1250, 540, 150, 30);
+		savePGNButton.setBounds(1250, 540, 150, 30);
 
 	}
 
@@ -377,12 +429,12 @@ public class ChessPanel extends JPanel {
 		// Initialisierung um Openings darstellen zu können
 		List<Move> currentMoves = getMoveHistory();
 		String currentUciMoves = convertMoveListToUci(currentMoves);
-		
+
 		String sanAnnotated = "";
-		
+
 		if (!this.isCustomBoard) {
-			sanAnnotated =  UciParser.convertUciToAnnotatedMoves(currentUciMoves);
-		} 
+			sanAnnotated = UciParser.convertUciToAnnotatedMoves(currentUciMoves);
+		}
 		// Variablenzuweisung um letzte erkannte Eröffnung zu speichern
 		String openingText = lastDetectedOpening;
 
@@ -391,7 +443,7 @@ public class ChessPanel extends JPanel {
 			// Key und Value der Map in extra Variablen speichern
 			String openingSequence = entry.getKey();
 			String openingName = entry.getValue();
-			
+
 			// Wenn aktuelle Zugabfolge mit Opening übereinstimmt dann break und der
 			// openingText wird auf den openingName gesetzt
 			if (sanAnnotated.equals(openingSequence)) {
@@ -661,7 +713,7 @@ public class ChessPanel extends JPanel {
 
 		logger.info("Quickload durchgefuehrt.");
 	}
-	
+
 	public void setCurrentMoveIndex(int currentMoveIndex) {
 		this.currentMoveIndex = currentMoveIndex;
 	}
@@ -670,20 +722,20 @@ public class ChessPanel extends JPanel {
 		engine.setBoard(customBoard);
 		setBoard(customBoard);
 		isCustomBoard = true;
-	    repaint();
-		
+		repaint();
+
 	}
 
-    public void setBoard(Board board) {
-        this.board = board;
-    }
+	public void setBoard(Board board) {
+		this.board = board;
+	}
 
-    public Board getBoard() {
-        return board;
-    }
-    
+	public Board getBoard() {
+		return board;
+	}
+
 	public ChessEngine getEngine() {
-		
+
 		return engine;
 	}
 
