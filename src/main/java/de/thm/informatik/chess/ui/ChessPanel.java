@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
@@ -85,9 +86,9 @@ public class ChessPanel extends JPanel {
 
 	public ChessPanel(ClockHandler handlerC) throws IOException {
 		this.handlerC = handlerC;
-		handlerC.setPanel(this);
-		handlerC.setEngine(engine);
-		handlerC.addClock(5);
+		this.handlerC.setPanel(this);
+		this.handlerC.setEngine(engine);
+		this.handlerC.addClock(5);
 
 		handlerS = new SkipHandler(engine);
 		handlerS.setPanel(this);
@@ -248,6 +249,44 @@ public class ChessPanel extends JPanel {
 				}
 			}
 		});
+	}
+
+	public void onTimeExpired(Side side) throws IOException{
+		if (side == WHITE) {
+			if (color) {
+				JOptionPane.showMessageDialog(ChessPanel.this, "Time violation White. Black Wins!"); 
+			} else {
+				JOptionPane.showMessageDialog(ChessPanel.this, "Time violation Black. White Wins!");
+			}
+		} else {
+			if (color) {
+				JOptionPane.showMessageDialog(ChessPanel.this, "Time violation Black. White Wins!", 
+										"Game Over", JOptionPane.INFORMATION_MESSAGE);
+			} else {
+				JOptionPane.showMessageDialog(ChessPanel.this, "Time violation White. Black Wins!");
+			}
+		}
+
+		handlerC.pauseClocks();
+
+		JFrame topFrame = (JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
+    	if (topFrame != null) {
+        	topFrame.dispose();
+    	}
+
+		reOpenInputWindow();
+	}
+
+	public void reOpenInputWindow() throws IOException{
+		JFrame frameInput = new JFrame("Input Window");
+        InputWindow input = new InputWindow();
+        frameInput.setContentPane(input);
+
+        frameInput.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frameInput.setResizable(false);
+        frameInput.setSize(500, 400);
+        frameInput.setLocationRelativeTo(null);
+        frameInput.setVisible(true);
 	}
 
 	@Override

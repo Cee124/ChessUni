@@ -106,8 +106,6 @@ public class InputWindow extends JPanel {
             SetupPositionPanel setupPanel = new SetupPositionPanel(framePanel, customBoard -> {
                 this.customBoard = customBoard;
                 panel.setCustomBoard(customBoard);
-//                ChessEngine engine = panel.getEngine();
-//                engine.setBoard(customBoard);
                 
             });
 
