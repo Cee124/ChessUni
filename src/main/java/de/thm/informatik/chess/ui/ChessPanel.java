@@ -218,10 +218,8 @@ public class ChessPanel extends JPanel {
 						if (isCaptured) {
 							if (facade.getBoard().getSideToMove() == WHITE) {
 								whiteFallenPieces.add(targetPiece);
-								System.out.println("White fallen pieces: " + whiteFallenPieces);
 							} else {
 								blackFallenPieces.add(targetPiece);
-								System.out.println("Black fallen pieces: " + blackFallenPieces);
 							}
 						}
 						// Zug wird ausgeführt

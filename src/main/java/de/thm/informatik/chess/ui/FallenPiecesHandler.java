@@ -56,7 +56,6 @@ public class FallenPiecesHandler {
 				xPieceWhite += 15;
 			}
 		}
-		System.out.println("Drawing at: " + xPieceWhite + ", " + yPieceWhite);
 
 		// Draw fallen pieces black
 		int xPieceBlack = clockX;

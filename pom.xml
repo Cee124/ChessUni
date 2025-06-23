@@ -84,14 +84,13 @@
                 <configuration>
                     <targetJdk>17</targetJdk>
                     <rulesets>
-                        <ruleset>rulesets/java/basic.xml</ruleset>
-                        <ruleset>rulesets/java/braces.xml</ruleset>
-                        <!-- Weitere Regelsets möglich -->
+                        <ruleset>category/java/bestpractices.xml</ruleset>
+                        <ruleset>category/java/codestyle.xml</ruleset>
                     </rulesets>
                 </configuration>
                 <executions>
                     <execution>
-                        <phase>verify</phase> <!-- Führt PMD während verify aus -->
+                        <phase>verify</phase>
                         <goals>
                             <goal>check</goal>
                             <goal>pmd</goal>
