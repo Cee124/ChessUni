@@ -128,20 +128,20 @@ public class ChessPanel extends JPanel {
 		add(savePGNButton);
 
 		//Button Logik
-		forwardButton.addActionListener(_ -> handlerS.fastForwardMove());
-		rewindButton.addActionListener(_ -> handlerS.rewindMove());
-		startButton.addActionListener(_ -> handlerC.startClocks());
-		pauseButton.addActionListener(_ -> handlerC.pauseClocks());
+		forwardButton.addActionListener(e -> handlerS.fastForwardMove());
+		rewindButton.addActionListener(e -> handlerS.rewindMove());
+		startButton.addActionListener(e -> handlerC.startClocks());
+		pauseButton.addActionListener(e -> handlerC.pauseClocks());
 
-		quicksaveButton.addActionListener(_ -> {
+		quicksaveButton.addActionListener(e -> {
 			quickHandler.quicksave();
 		});
 
-		quickloadButton.addActionListener(_ -> {
+		quickloadButton.addActionListener(e -> {
 			quickHandler.quickload();
 		});
 		
-        loadPGNButton.addActionListener(_ -> {
+        loadPGNButton.addActionListener(e -> {
             javax.swing.JFileChooser fileChooser = new javax.swing.JFileChooser();
             fileChooser.setDialogTitle("PGN-Datei laden");
 
@@ -161,7 +161,7 @@ public class ChessPanel extends JPanel {
             }
         });
 
-        savePGNButton.addActionListener(_ -> {
+        savePGNButton.addActionListener(e -> {
         	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
         	String timestamp = LocalDateTime.now().format(formatter);
         	String filePath = "games/game_" + timestamp + ".pgn";
