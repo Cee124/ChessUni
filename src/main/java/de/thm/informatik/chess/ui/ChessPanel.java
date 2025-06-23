@@ -87,6 +87,7 @@ public class ChessPanel extends JPanel {
 
 	private Facade facade;
 	private boolean isCustomBoard = false;
+	private boolean isPgnGame = false;
 
 	public ChessPanel(ClockHandler handlerC) throws IOException {
 
@@ -149,10 +150,6 @@ public class ChessPanel extends JPanel {
 			facade.quickload();
 		});
 		
-        loadPGNButton.addActionListener(e -> {
-            javax.swing.JFileChooser fileChooser = new javax.swing.JFileChooser();
-            fileChooser.setDialogTitle("PGN-Datei laden");
-		});
 		// Laden eines Spiels
 		loadPGNButton.addActionListener(e -> {
 			javax.swing.JFileChooser fileChooser = new javax.swing.JFileChooser();
@@ -164,10 +161,12 @@ public class ChessPanel extends JPanel {
                 
                 PGNHandling.loadGame(filePath, facade);
                 currentMoveIndex = moveHistory.size();
+				isPgnGame = true;
                 handlerC.pauseClocks();           
                 handlerC.setWhiteRemaining(0);    
-                handlerC.setBlackRemaining(0);
+                handlerC.setBlackRemaining(0);				
 
+<<<<<<< HEAD
 				PGNHandling.loadGame(filePath, facade);
 				currentMoveIndex = moveHistory.size();
 				handlerC.pauseClocks(); // Uhren anhalten
@@ -175,6 +174,13 @@ public class ChessPanel extends JPanel {
 				handlerC.setBlackRemaining(0);
 			}});
         savePGNButton.addActionListener(_ -> {
+=======
+                repaint();
+            }
+        });
+
+        savePGNButton.addActionListener(e -> {
+>>>>>>> a584a4d23542ed443827e4825d1c78b01fb6648f
         	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
         	String timestamp = LocalDateTime.now().format(formatter);
         	String filePath = "games/game_" + timestamp + ".pgn";
@@ -314,29 +320,34 @@ public class ChessPanel extends JPanel {
 
 
 	public void onTimeExpired(Side side) throws IOException{
-		if (side == WHITE) {
-			if (color) {
-				JOptionPane.showMessageDialog(ChessPanel.this, "Time violation White. Black Wins!"); 
+		if(!isPgnGame){
+			if (side == WHITE) {
+				if (color) {
+					JOptionPane.showMessageDialog(ChessPanel.this, "Time violation White. Black Wins!",
+												"Game Over", JOptionPane.INFORMATION_MESSAGE); 
+				} else {
+					JOptionPane.showMessageDialog(ChessPanel.this, "Time violation Black. White Wins!",
+												"Game Over", JOptionPane.INFORMATION_MESSAGE);
+				}
 			} else {
-				JOptionPane.showMessageDialog(ChessPanel.this, "Time violation Black. White Wins!");
-			}
-		} else {
-			if (color) {
-				JOptionPane.showMessageDialog(ChessPanel.this, "Time violation Black. White Wins!", 
+				if (color) {
+					JOptionPane.showMessageDialog(ChessPanel.this, "Time violation Black. White Wins!", 
 										"Game Over", JOptionPane.INFORMATION_MESSAGE);
-			} else {
-				JOptionPane.showMessageDialog(ChessPanel.this, "Time violation White. Black Wins!");
+				} else {
+					JOptionPane.showMessageDialog(ChessPanel.this, "Time violation White. Black Wins!",
+												"Game Over", JOptionPane.INFORMATION_MESSAGE);
+				}
 			}
+		
+			handlerC.pauseClocks();
+
+			JFrame topFrame = (JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
+    		if (topFrame != null) {
+        		topFrame.dispose();
+    		}
+
+			reOpenInputWindow();
 		}
-
-		handlerC.pauseClocks();
-
-		JFrame topFrame = (JFrame) javax.swing.SwingUtilities.getWindowAncestor(this);
-    	if (topFrame != null) {
-        	topFrame.dispose();
-    	}
-
-		reOpenInputWindow();
 	}
 
 	public void reOpenInputWindow() throws IOException{
