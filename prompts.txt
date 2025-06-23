@@ -651,6 +651,20 @@ StringBuilder uciMoves = new StringBuilder();
 
 Promt 24: Welche Funktionalitäten fehlen in dieser Klasse (hier UciParser) um der SAN Notation möglichst nahe zu kommen?
 -->
-Punkte nach der Zugnummer, Figur als Großbuchstabe, korrektes Spielergebnis am Ende.
+Punkte nach der Zugnummer, Figur als Großbuchstabe, korrektes Spielergebnis am Ende, Rochadenerkennung
+
+Prompt 25: Wie realisiere ich die Ergebnis erkennung für meine PGN Datei?
+-->
+StringBuilder und dann
+if (finalBoard.isMated()) {
+                result = finalBoard.getSideToMove() == com.github.bhlangonijr.chesslib.Side.WHITE ? "0-1" : "1-0";
+            } else if (finalBoard.isDraw()) {
+                result = "1/2-1/2";
+            }
+dann
+
+.append(result)
+
+
 
 
