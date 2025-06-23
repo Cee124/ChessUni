@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.github.bhlangonijr.chesslib.Board;
 import com.github.bhlangonijr.chesslib.Piece;
+import com.github.bhlangonijr.chesslib.Rank;
 import com.github.bhlangonijr.chesslib.Side;
 import static com.github.bhlangonijr.chesslib.Side.WHITE;
 import com.github.bhlangonijr.chesslib.Square;
@@ -67,8 +68,8 @@ public class ChessPanel extends JPanel {
 	private final JButton pauseButton;
 	private final JButton quicksaveButton;
 	private final JButton quickloadButton;
-    private final JButton loadPGNButton;
-    private final JButton savePGNButton;
+	private final JButton loadPGNButton;
+	private final JButton savePGNButton;
 
 	private final Map<String, String> openingMap;
 	private String lastDetectedOpening = "Keine Eröffnung erkannt";
@@ -147,12 +148,15 @@ public class ChessPanel extends JPanel {
 			facade.quickload();
 		});
 		
-        loadPGNButton.addActionListener(_ -> {
+        loadPGNButton.addActionListener(e -> {
             javax.swing.JFileChooser fileChooser = new javax.swing.JFileChooser();
             fileChooser.setDialogTitle("PGN-Datei laden");
-
-            int userSelection = fileChooser.showOpenDialog(this);
-
+		});
+		// Laden eines Spiels
+		loadPGNButton.addActionListener(e -> {
+			javax.swing.JFileChooser fileChooser = new javax.swing.JFileChooser();
+			fileChooser.setDialogTitle("PGN-Datei laden");
+			int userSelection = fileChooser.showOpenDialog(this);
             if (userSelection == javax.swing.JFileChooser.APPROVE_OPTION) {
                 java.io.File fileToLoad = fileChooser.getSelectedFile();
                 String filePath = fileToLoad.getAbsolutePath();
@@ -163,10 +167,12 @@ public class ChessPanel extends JPanel {
                 handlerC.setWhiteRemaining(0);    
                 handlerC.setBlackRemaining(0);
 
-                repaint();
-            }
-        });
-
+				PGNHandling.loadGame(filePath, facade);
+				currentMoveIndex = moveHistory.size();
+				handlerC.pauseClocks(); // Uhren anhalten
+				handlerC.setWhiteRemaining(0); // Zeit auf 0 setzen (optional)
+				handlerC.setBlackRemaining(0);
+			}});
         savePGNButton.addActionListener(_ -> {
         	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
         	String timestamp = LocalDateTime.now().format(formatter);
@@ -193,7 +199,17 @@ public class ChessPanel extends JPanel {
 						repaint();
 					}
 				} else {
-					Move move = new Move(selectedSquare, clickedSquare);
+					Piece movingPiece = facade.getPiece(selectedSquare);
+					Move move = createMoveWithPromotionIfNeeded(selectedSquare, clickedSquare,
+							facade.getBoard().getSideToMove(), movingPiece);
+
+					// Prüfe, ob Promotion abgebrochen wurde
+					if (move == null) {
+						selectedSquare = null;
+						highlightedSquares.clear();
+						repaint();
+						return;
+					}
 					// Liste aller legalen Moves
 					List<Move> legalMoves = facade.getLegalMoves();
 
@@ -255,6 +271,46 @@ public class ChessPanel extends JPanel {
 			}
 		});
 	}
+	
+
+	private Move createMoveWithPromotionIfNeeded(Square from, Square to, Side side, Piece movingPiece) {
+		// Prüfen, ob Promotion nötig ist
+		Rank targetRank = to.getRank();
+		boolean isPromotion = (movingPiece == Piece.WHITE_PAWN && targetRank == Rank.RANK_8 && side == Side.WHITE) ||
+				(movingPiece == Piece.BLACK_PAWN && targetRank == Rank.RANK_1 && side == Side.BLACK);
+
+		if (!isPromotion) {
+			// Keine Promotion, normaler Zug
+			return new Move(from, to);
+		}
+
+		// Promotion-Figur auswählen
+		String[] options = { "Dame", "Turm", "Läufer", "Springer" };
+		int choice = JOptionPane.showOptionDialog(this, // this = z.B. dein JPanel oder Frame
+				"Wähle eine Figur zur Promotion:",
+				"Bauernpromotion",
+				JOptionPane.DEFAULT_OPTION,
+				JOptionPane.QUESTION_MESSAGE,
+				null,
+				options,
+				options[0]);
+
+		if (choice == JOptionPane.CLOSED_OPTION) {
+			// Spieler hat Dialog geschlossen -> Abbrechen
+			return null;
+		}
+
+		Piece promoPiece = null;
+		switch (choice) {
+			case 0 -> promoPiece = (side == Side.WHITE) ? Piece.WHITE_QUEEN : Piece.BLACK_QUEEN;
+			case 1 -> promoPiece = (side == Side.WHITE) ? Piece.WHITE_ROOK : Piece.BLACK_ROOK;
+			case 2 -> promoPiece = (side == Side.WHITE) ? Piece.WHITE_BISHOP : Piece.BLACK_BISHOP;
+			case 3 -> promoPiece = (side == Side.WHITE) ? Piece.WHITE_KNIGHT : Piece.BLACK_KNIGHT;
+		}
+
+		return new Move(from, to, promoPiece);
+	}
+
 
 	@Override
 	// Methode zum festlegen der Button Positionen
@@ -278,7 +334,8 @@ public class ChessPanel extends JPanel {
 		quicksaveButton.setBounds(centerInStats - 30 - 20, buttonY, 30, 30);
 		quickloadButton.setBounds(centerInStats + 60 + 40, buttonY, 30, 30);
 		loadPGNButton.setBounds(1250, 500, 150, 30);
-        savePGNButton.setBounds(1250, 540, 150, 30);
+		savePGNButton.setBounds(1250, 540, 150, 30);
+
 	}
 
 	@Override
@@ -466,14 +523,14 @@ public class ChessPanel extends JPanel {
 	    repaint();
 	}
 
-    public void setBoard(Board board) {
-        this.board = board;
-    }
+	public void setBoard(Board board) {
+		this.board = board;
+	}
 
-    public Board getBoard() {
-        return board;
-    }
-    
+	public Board getBoard() {
+		return board;
+	}
+
 	public ChessEngine getEngine() {
 		return engine;
 	}
@@ -494,3 +551,10 @@ public class ChessPanel extends JPanel {
 		return facade;
 	}
 }
+	
+
+
+
+
+
+
