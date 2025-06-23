@@ -553,3 +553,22 @@ Kurz erklärt:
     frame.setSize(...) und frame.setLocation(0, 0) setzen das Fenster auf volle Größe, oben links beginnend.
 
     Kein setUndecorated, kein GraphicsDevice, kein echter exklusiver Modus – nur einfacher, sauberer Vollbild-Look.
+
+Promt 11: How can i manually disable the castlingrights for a customboard when using ChessLib 1.3.4? I want to do it in this class: (SetupPositionPanel)
+-->Yes — you can (and should) remove the castling rights manually in your SetupPositionPanel before finalizing the custom position, especially since you're using board.clear() and placing pieces manually.
+
+Since you're using ChessLib 1.3.4, you can manipulate the board state using its FEN string, because the library doesn't expose a direct method like setCastlingRights(...) publicly. Here's how you can do it cleanly:
+In your doneButton logic:
+
+// Get current board FEN
+	String fen = board.getFen();
+
+	// Replace the castling rights field with "-" (no castling)
+	String[] parts = fen.split(" ");
+	if (parts.length >= 6) {
+		parts[2] = "-"; // Castling rights
+		String newFen = String.join(" ", parts);
+		board.loadFromFen(newFen); // Re-apply FEN with disabled castling
+	}
+
+    
