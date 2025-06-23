@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -33,11 +32,13 @@ import com.github.bhlangonijr.chesslib.Square;
 import com.github.bhlangonijr.chesslib.move.Move;
 
 import de.thm.informatik.chess.domain.ChessEngine;
+import de.thm.informatik.chess.domain.Facade;
 import de.thm.informatik.chess.domain.GameState;
 import de.thm.informatik.chess.domain.QuickHandler;
 import de.thm.informatik.chess.domain.ShowMoveOption;
 import de.thm.informatik.chess.service.OpeningDetection;
 import de.thm.informatik.chess.service.PGNHandling;
+import de.thm.informatik.chess.util.PieceIconLoader;
 import de.thm.informatik.chess.util.UciParser;
 
 public class ChessPanel extends JPanel {
@@ -45,10 +46,11 @@ public class ChessPanel extends JPanel {
 	private static final Logger logger = LogManager.getLogger(ChessPanel.class);
 
 	private ChessEngine engine = new ChessEngine();
+	
 	private final ClockHandler handlerC;
 	private SkipHandler handlerS;
 	private DrawBoard drawB;
-	private final FallenPiecesHandler drawFP;
+	private final FallenPiecesHandler drawFP ;
 	private Board board;
 	private QuickHandler quickHandler;
 	private final OpeningDetection detector;
@@ -57,7 +59,7 @@ public class ChessPanel extends JPanel {
 	private Square selectedSquare = null;
 	private final int squareSize = 95;
 
-	private static final List<Move> moveHistory = new LinkedList<>();
+	private final List<Move> moveHistory;
 	private int currentMoveIndex;
 
 	private final JButton forwardButton;
@@ -82,28 +84,32 @@ public class ChessPanel extends JPanel {
 	private ShowMoveOption moveOption;
 	private List<Square> highlightedSquares = new ArrayList<>();
 
+	private Facade facade;
 	private boolean isCustomBoard = false;
 
 	public ChessPanel(ClockHandler handlerC) throws IOException {
+
+		
+		this.drawFP = new FallenPiecesHandler(whiteFallenPieces, blackFallenPieces, squareSize, color, null);
+		facade = new Facade(handlerC, whiteFallenPieces, blackFallenPieces, currentMoveIndex, drawFP);
+		this.drawFP.setFacade(facade);
+		moveHistory = facade.getMoveHistory();
+		this.drawB = new DrawBoard(facade, squareSize, color);
 		this.handlerC = handlerC;
 		this.handlerC.setPanel(this);
-		this.handlerC.setEngine(engine);
+		this.handlerC.setFacade(facade);
 		this.handlerC.addClock(5);
 
-		handlerS = new SkipHandler(engine);
+		handlerS = new SkipHandler(facade.getEngine(), facade);
 		handlerS.setPanel(this);
 		handlerS.setHandler(handlerC);
 
-		this.drawB = new DrawBoard(engine, squareSize, color);
-		this.drawFP = new FallenPiecesHandler(whiteFallenPieces, blackFallenPieces, squareSize, color);
-		this.quickHandler = new QuickHandler(engine, handlerC, whiteFallenPieces, blackFallenPieces, 
-                                   currentMoveIndex, moveHistory, drawFP);
+		// this.quickHandler = facade.getQuickHandler();
+		
+		detector = facade.getOpeningDetection();
+		openingMap = facade.getOpeningsMap();
 
-		detector = new OpeningDetection();
-
-		openingMap = detector.loadOpenings("/Openings/eco_openings.html");
-
-		moveOption = new ShowMoveOption(engine);
+		moveOption = facade.getMoveOption();
 
 		//Um Objekte individuell anordnen zu können
 		setLayout(null);
@@ -135,11 +141,11 @@ public class ChessPanel extends JPanel {
 		pauseButton.addActionListener(e -> handlerC.pauseClocks());
 
 		quicksaveButton.addActionListener(e -> {
-			quickHandler.quicksave();
+			facade.quicksave();
 		});
 
 		quickloadButton.addActionListener(e -> {
-			quickHandler.quickload();
+			facade.quickload();
 		});
 		
         loadPGNButton.addActionListener(e -> {
@@ -152,7 +158,7 @@ public class ChessPanel extends JPanel {
                 java.io.File fileToLoad = fileChooser.getSelectedFile();
                 String filePath = fileToLoad.getAbsolutePath();
                 
-                PGNHandling.loadGame(filePath, engine);
+                PGNHandling.loadGame(filePath, facade);
                 currentMoveIndex = moveHistory.size();
                 handlerC.pauseClocks();           
                 handlerC.setWhiteRemaining(0);    
@@ -167,8 +173,8 @@ public class ChessPanel extends JPanel {
         	String timestamp = LocalDateTime.now().format(formatter);
         	String filePath = "games/game_" + timestamp + ".pgn";
         	
-            PGNHandling pgnHandler = new PGNHandling(filePath);
-            pgnHandler.saveGame(ChessPanel.getMoveHistory());
+            PGNHandling pgnHandler = new PGNHandling(filePath, facade);
+            pgnHandler.saveGame(facade.getMoveHistory());
         });
 
 		addMouseListener(new MouseAdapter() {
@@ -178,39 +184,39 @@ public class ChessPanel extends JPanel {
 				int rank = color ? 7 - (e.getY() / squareSize) : e.getY() / squareSize;
 				Square clickedSquare = drawB.squareFromCoords(rank, file);
 
-				Piece targetPiece = engine.getPiece(clickedSquare);
+				Piece targetPiece = facade.getPiece(clickedSquare);
 				boolean isCaptured = targetPiece != Piece.NONE;
 
 				if (selectedSquare == null) {
-					if (engine.getPiece(clickedSquare) != Piece.NONE) {
+					if (facade.getPiece(clickedSquare) != Piece.NONE) {
 						selectedSquare = clickedSquare;
-						highlightedSquares = moveOption.getLegalTargetSquares(selectedSquare);
+						highlightedSquares = facade.getLegalTargetSquares(selectedSquare);
 						repaint();
 					}
 				} else {
 					Move move = new Move(selectedSquare, clickedSquare);
 					// Liste aller legalen Moves
-					List<Move> legalMoves = engine.getLegalMoves();
+					List<Move> legalMoves = facade.getLegalMoves();
 
 					// Wenn die Liste eine Zug enthält
 					if (legalMoves.contains(move)) {
-						Side movingSide = engine.getBoard().getSideToMove();
+						Side movingSide = facade.getBoard().getSideToMove();
 						if (isCaptured) {
-							if (engine.getBoard().getSideToMove() == WHITE) {
+							if (facade.getBoard().getSideToMove() == WHITE) {
 								whiteFallenPieces.add(targetPiece);
 							} else {
 								blackFallenPieces.add(targetPiece);
 							}
 						}
 						// Zug wird ausgeführt
-						engine.makeMove(move);
+						facade.makeMove(move);
 						if (currentMoveIndex != moveHistory.size()) {
         					moveHistory.subList(currentMoveIndex, moveHistory.size()).clear();
     					}
 						moveHistory.add(move);
 						currentMoveIndex = moveHistory.size();
 
-						Side nextSide = engine.getBoard().getSideToMove();
+						Side nextSide = facade.getBoard().getSideToMove();
 						if (nextSide == WHITE) {
 							if (color) {
 								handlerC.startWhiteClock();
@@ -226,16 +232,16 @@ public class ChessPanel extends JPanel {
 						}
 
 						//Schachmatt-Erkennung
-						if (engine.isCheckmate()) {
+						if (facade.isCheckmate()) {
 							JOptionPane.showMessageDialog(ChessPanel.this,
-									"Checkmate! " + (movingSide == WHITE ? "White" : "Black") + " loses.");
+									"Checkmate! " + (movingSide == WHITE ? "Black" : "White") + " loses.");
 							handlerC.pauseClocks();
 						}
 						//Schach-Erkennung
-						else if (engine.isInCheck()) {
+						else if (facade.isInCheck()) {
 							JOptionPane.showMessageDialog(ChessPanel.this,
 									(nextSide == WHITE ? "White" : "Black") + " is in Check!");
-						} else if (engine.isGameOver()) {
+						} else if (facade.isGameOver()) {
 							JOptionPane.showMessageDialog(ChessPanel.this, "The game is over");
 						}
 						//Aktualisierung der Ansicht
@@ -322,7 +328,7 @@ public class ChessPanel extends JPanel {
 		drawB.drawBoard(g, highlightedSquares);
 		drawFP.drawFallenPieces(g);
 
-		List<Move> moveHistory = getMoveHistory();
+		List<Move> moveHistory = facade.getMoveHistory();
 
 		//Rechte Bildschirmhälfte dunkelgrün färben
 		Graphics2D g2 = (Graphics2D) g.create();
@@ -386,7 +392,7 @@ public class ChessPanel extends JPanel {
 
     	String openingText = lastDetectedOpening;
     	if (!isCustomBoard) {
-        	String currentUciMoves = convertMoveListToUci(getMoveHistory());
+        	String currentUciMoves = convertMoveListToUci(facade.getMoveHistory());
         	String sanAnnotated = UciParser.convertUciToAnnotatedMoves(currentUciMoves);
         	openingText = getLastDetectedOpening(sanAnnotated);
     	}
@@ -461,10 +467,6 @@ public class ChessPanel extends JPanel {
 		}
 	}
 
-	//Methode um Liste gemachter Züge zurückzugeben
-	public static List<Move> getMoveHistory() {
-		return moveHistory;
-	}
 
 	//Methode um Zeitanzeige im format mm:ss zu erstellen
 	private String formatTime(long millis) {
@@ -497,7 +499,7 @@ public class ChessPanel extends JPanel {
 	}
 
 	public void setCustomBoard(Board customBoard) {
-		engine.setBoard(customBoard);
+		facade.setBoard(customBoard);
 		setBoard(customBoard);
 		isCustomBoard = true;
 	    repaint();
@@ -525,5 +527,9 @@ public class ChessPanel extends JPanel {
 
 	public DrawBoard getDrawBoard(){
 		return drawB;
+	}
+
+	public Facade getFacade() {
+		return facade;
 	}
 }

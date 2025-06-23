@@ -14,6 +14,9 @@ import javax.swing.JPanel;
 
 import com.github.bhlangonijr.chesslib.Board;
 
+import de.thm.informatik.chess.domain.Facade;
+import de.thm.informatik.chess.util.PieceIconLoader;
+
 public class InputWindow extends JPanel {
 
     private final JButton modus3;
@@ -34,29 +37,32 @@ public class InputWindow extends JPanel {
     private final JLabel toggleMoveOptionsText;
     private final JButton toggleMoveOptionsBox;
     private boolean moveOptionsSelected = false;
-
+   
     private ChessPanel panel;
     private ClockHandler handler;
     private DrawBoard drawB;
     private Board customBoard;
+    private Facade facade;
 
     public InputWindow() throws IOException {
+       
         this.handler = new ClockHandler();
         this.panel = new ChessPanel(handler);
         this.drawB = panel.getDrawBoard();
+        this.facade = panel.getFacade();
 
         setLayout(null);
 
         modus3 = new JButton("3 Min");
         modus5 = new JButton("5 Min");
         modus10 = new JButton("10 Min");
-        whiteKing = new JButton(PieceIconLoader.WHITEKING_ICONX);
-        blackKing = new JButton(PieceIconLoader.BLACKKING_ICONX);
+        whiteKing = new JButton(facade.getIcon("WHITEKING"));
+        blackKing = new JButton(facade.getIcon("BLACKKING"));
         rewindText = new JLabel("Rewind? ");
-        rewindBox = new JButton(PieceIconLoader.EMPTY_ICON);
+        rewindBox = new JButton(facade.getIcon("EMPTY"));
         setupButton = new JButton("Setup Custom Position");
         toggleMoveOptionsText = new JLabel("Show Move Options? ");
-        toggleMoveOptionsBox = new JButton(PieceIconLoader.EMPTY_ICON);
+        toggleMoveOptionsBox = new JButton(facade.getIcon("EMPTY"));
 
         enter = new JButton("Enter");
 
@@ -88,11 +94,11 @@ public class InputWindow extends JPanel {
             rewindSelected = !rewindSelected;
 
             if (rewindSelected) {
-                rewindBox.setIcon(PieceIconLoader.TICKED_ICON);
+                rewindBox.setIcon(facade.getIcon("TICKED"));
                 panel.setRewind(true);
 
             } else {
-                rewindBox.setIcon(PieceIconLoader.EMPTY_ICON);
+                rewindBox.setIcon(facade.getIcon("EMPTY"));
 
                 panel.setRewind(false);
             }
@@ -125,10 +131,10 @@ public class InputWindow extends JPanel {
         toggleMoveOptionsBox.addActionListener(e -> {
             moveOptionsSelected = !moveOptionsSelected;
             if (moveOptionsSelected) {
-                toggleMoveOptionsBox.setIcon(PieceIconLoader.TICKED_ICON);
+                toggleMoveOptionsBox.setIcon(facade.getIcon("TICKED"));
                 drawB.setShowMoveOptions(true);
             } else {
-                toggleMoveOptionsBox.setIcon(PieceIconLoader.EMPTY_ICON);
+                toggleMoveOptionsBox.setIcon(facade.getIcon("EMPTY"));
                 drawB.setShowMoveOptions(false);
             }
 

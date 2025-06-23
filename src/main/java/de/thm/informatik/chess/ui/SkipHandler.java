@@ -5,14 +5,17 @@ import java.util.List;
 import com.github.bhlangonijr.chesslib.move.Move;
 
 import de.thm.informatik.chess.domain.ChessEngine;
+import de.thm.informatik.chess.domain.Facade;
 
 public class SkipHandler {
     private final ChessEngine engine;
     private ChessPanel panel;
     private ClockHandler handler;
+    private Facade facade;
 
-    public SkipHandler(ChessEngine engine) {
+    public SkipHandler(ChessEngine engine, Facade facade) {
         this.engine = engine;
+        this.facade = facade;
     }
 
     public void setPanel(ChessPanel panel) {
@@ -27,7 +30,7 @@ public class SkipHandler {
         if(!panel.rewindSelectedPanel){
             return;
         }
-        List<Move> moveHistory = ChessPanel.getMoveHistory();
+        List<Move> moveHistory = facade.getMoveHistory();
         int currentMoveIndex = panel.getCurrentMoveIndex();
         
         if (currentMoveIndex > 0) {
@@ -43,7 +46,7 @@ public class SkipHandler {
     }
 
     public void fastForwardMove() {
-        List<Move> moveHistory = ChessPanel.getMoveHistory();
+        List<Move> moveHistory = facade.getMoveHistory();
         int currentMoveIndex = panel.getCurrentMoveIndex();
 
         if (currentMoveIndex < moveHistory.size()) {
